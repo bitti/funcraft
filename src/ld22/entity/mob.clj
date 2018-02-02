@@ -13,9 +13,6 @@
 (defn new-mob [x y]
   (Mob. (Entity. x y 4 3) 0 max-health 0))
 
-(defprotocol Tickable
-  (tick [this entities]))
-
 (extend-type Mob
   Movable
   (^Mob move [this xa ya]

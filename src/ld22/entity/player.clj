@@ -1,24 +1,19 @@
 (ns ld22.entity.player
   (:require [ld22.entity.entity :as entity]
-            [ld22.entity.mob :refer [new-mob Tickable]]
+            [ld22.entity.mob :refer [new-mob]]
             [ld22.gfx.colors :as colors]
             [ld22.gfx.input-handler :as input-handler]
-            [ld22.gfx.screen :as screen])
+            [ld22.gfx.screen :as screen]
+            [ld22.level.macros :refer [>>]]
+            [ld22.protocols :refer [Renderable Tickable]])
   (:import ld22.entity.mob.Mob))
 
 (def ^:const col (colors/index -1 1 220 532))
           
 (defrecord Player [^Mob mob ^int stamina])
 
-(defprotocol Renderable
-  (render [this screen]))
-
 (defn new-player [x y]
   (Player. (new-mob x y) 10))
-
-(defmacro >>
-  ([n] `(bit-shift-right ~n 1))
-  ([n b] `(bit-shift-right ~n ~b)))
 
 (extend-type Player
   Tickable

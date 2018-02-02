@@ -1,18 +1,17 @@
 (ns ld22.game
   (:require [clojure.java.io :refer [resource]]
-            [ld22.entity.mob :refer [tick Tickable]]
             [ld22.entity.player :as player]
             [ld22.gfx.colors :as colors]
             [ld22.gfx.input-handler :as input-handler]
             [ld22.gfx.screen :as screen]
             [ld22.gfx.sprite-sheet :as sprite-sheet]
-            [ld22.level.level :refer [grass-color]])
+            [ld22.level.level :refer [grass-color]]
+            [ld22.protocols :as protocols :refer [tick Tickable]])
   (:import java.awt.BorderLayout
            [java.awt.image BufferedImage BufferStrategy]
            java.util.Random
            javax.imageio.ImageIO
-           javax.swing.JFrame
-           ld22.entity.player.Player))
+           javax.swing.JFrame))
 
 (def ^:const game-name "Minicraft")
 (def ^:const height 240)
@@ -61,11 +60,12 @@
                          x y
                          (colors/index 000 grass-color 404 555)
                          ))))
-    (player/render player screen))
+    (protocols/render player screen)
+    )
 
-  (let [w (screen :w)
-        screen-pixels ^ints (screen :pixels)]
-    (dotimes [y (screen :h)]
+  (let [w (:w screen)
+        screen-pixels ^ints (:pixels screen)]
+    (dotimes [y (:h screen)]
       (let [yoffs (* y ^int w)]
         (dotimes [x w]
           (->> (+ yoffs x)
