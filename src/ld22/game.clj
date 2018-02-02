@@ -1,15 +1,18 @@
 (ns ld22.game
   (:require [clojure.java.io :refer [resource]]
+            [ld22.entity.mob :refer [tick Tickable]]
+            [ld22.entity.player :as player]
             [ld22.gfx.colors :as colors]
+            [ld22.gfx.input-handler :as input-handler]
             [ld22.gfx.screen :as screen]
             [ld22.gfx.sprite-sheet :as sprite-sheet]
-            [ld22.level.level :refer [grass-color]]
-            [ld22.perfgraph :as pergraph])
+            [ld22.level.level :refer [grass-color]])
   (:import java.awt.BorderLayout
            [java.awt.image BufferedImage BufferStrategy]
            java.util.Random
            javax.imageio.ImageIO
-           javax.swing.JFrame))
+           javax.swing.JFrame
+           ld22.entity.player.Player))
 
 (def ^:const game-name "Minicraft")
 (def ^:const height 240)
@@ -26,24 +29,39 @@
 (def pixels ^ints (.getData ^java.awt.image.DataBufferInt
                             (.getDataBuffer (.getRaster ^BufferedImage image))))
 (def running (atom true))
-
-(def c ^long (atom 0))
-
 (def gr (Random.))
 
-(defn render [bs]
-  (swap! c #(mod (dec ^int %) (* 2 height)))
-  (dotimes [y 32]
-    (let [yoffs (* y 8)
-          tile-yoffs (* 32 y)
-          cc @c
-          ]
-      (dotimes [x 32]
-        (screen/render screen (bit-shift-left x 3) yoffs
-                       (+ x tile-yoffs)
-                       0 cc
-                       (colors/index 000 grass-color 404 555)
-                       ))))
+(defrecord Game [state entities])
+
+(extend-type Game
+  Tickable
+  (tick [^Game this entities]
+    (assoc entities
+           :player (tick (:player entities) entities))))
+
+(defn new-game []
+  (Game.
+   {:lt (System/nanoTime) ; time since last tick/render
+    :nt (System/nanoTime) ; time since last FPS report
+    :frames 0             ; Count of frames since last FPS report
+    :sleeptime 0}         ; Idle time since last FPS report
+   {:player (player/new-player (/ width 2) (/ height 2))}))
+
+(defn render [bs entities]
+  (let [player (:player entities)
+        x (- (.. player mob entity x) (/ width 2))
+        y (- (.. player mob entity y) (/ height 2))
+        ]
+    (dotimes [yt 32]
+      (let [yoffs (bit-shift-left yt 3)
+            tile-yoffs (* 32 yt)]
+        (dotimes [xt 32]
+          (screen/render screen (bit-shift-left xt 3) yoffs
+                         (+ xt tile-yoffs)
+                         x y
+                         (colors/index 000 grass-color 404 555)
+                         ))))
+    (player/render player screen))
 
   (let [w (screen :w)
         screen-pixels ^ints (screen :pixels)]
@@ -62,8 +80,6 @@
     (.dispose))
   (.show ^BufferStrategy bs))
 
-;(def game (delay (doto (new Canvas))))
-
 (def frame
   (delay (doto (new JFrame game-name)
            (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
@@ -72,41 +88,53 @@
            (.setLayout (new BorderLayout))
            (.createBufferStrategy 3)
            (.setLocationRelativeTo nil)
+           (.addKeyListener input-handler/key-listener)
            )))
 
 (def bs (delay ^BufferStrategy (.getBufferStrategy ^JFrame @frame)))
 
-(defn run [{:keys [lt              ; Time since last tick/render
-                   nt              ; Time since last FPS report
-                   frames          ; Count of frames since last FPS report
-                   sleeptime       ; Idle time since last FPS report
-                   ] :as state}]
+(defn run [^Game {{:keys [ lt
+                    ^int nt
+                    ^int frames
+                    sleeptime
+                    ] :as state} :state
+            entities :entities :as game}]
   (if @running (send *agent* run))
   (let [now (System/nanoTime)
-        unprocessed (- now ^long lt)]
+        unprocessed (- now lt)]
     (cond
       (< unprocessed nanos-per-tick)
       (do
         (Thread/sleep (int (/ (- nanos-per-tick unprocessed) 1e6)))
-        (assoc state :sleeptime (+ sleeptime (- (System/nanoTime) now))))
-      
+        (assoc game
+               :state (assoc state :sleeptime (+ sleeptime (- (System/nanoTime) now)))))
+
       (> (- now nt) 9.99e8)
       (do
         (printf " %d FPS Capacity %.2f\n" frames (double (/ sleeptime (- now nt))))
         (flush)
-        (assoc state
-               :nt now
-               :frames 0
-               :sleeptime 0))
-      
+        (assoc game
+               :state (assoc state
+                             :nt now
+                             :frames 0
+                             :sleeptime 0)))
       :else
       (do
-        (render @bs)
-        (send pergraph/a pergraph/repaint (int (/ (- (System/nanoTime) now) 1e6)))
-        (assoc state :lt now :frames (inc frames))
+        (render @bs entities)
+        (assoc game
+               :state (assoc state :lt now :frames (inc frames))
+               :entities (tick game entities))
         ))))
 
-(def game-loop (delay (agent {:lt (System/nanoTime) :nt (System/nanoTime) :frames 0 :sleeptime 0})))
+(defn throw-error [a e]
+  (throw e))
+
+(def game-loop
+  (delay
+   (agent (new-game)
+          :erro-handler throw-error
+          :error-mode :fail
+    )))
 
 (defn start []
   (reset! running true)
@@ -114,4 +142,3 @@
 
 (defn stop []
   (reset! running false))
-

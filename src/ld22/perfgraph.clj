@@ -4,7 +4,6 @@
 
 ;;; Alternative? https://github.com/sjl/metrics-clojure
 
-
 (def data (atom []))
 (def pad 20)
 
@@ -37,14 +36,15 @@
       )))
 
 
-(def f (let [jf (new JFrame)]
-         (.add (.getContentPane jf) plot-test)
-         (doto jf
-           (.setSize 400 400)
-           (.setLocation 200 200)
-           (.setVisible true)
-           )
-         jf))
+(comment
+  (def f (let [jf (new JFrame)]
+           (.add (.getContentPane jf) plot-test)
+           (doto jf
+             (.setSize 400 400)
+             (.setLocation 200 200)
+             (.setVisible true)
+             )
+           jf)))
 
 ;(.add (.getContentPane f) plot-test)
 
@@ -55,5 +55,6 @@
     (.repaint plot-test))
   (if s (inc s) 0))
 
-(def a (agent nil))
-(send a repaint nil)
+(comment
+  (def a (agent nil))
+  (send a repaint nil))

@@ -30,8 +30,7 @@
         ;; t-offs = x-tile * 8 + y-tile * 8 * sheet.width
         t-offs (+ (bit-shift-left x-tile 3)
                   (* (bit-shift-left y-tile 3) ^int (sheet :width)))
-        mirror-x ((set options) :mirror-x)
-        mirror-y ((set options) :mirror-y)
+        {:keys [mirror-x mirror-y]} (apply hash-map options)
         xss (if mirror-x 7 0)
         xd (if mirror-x dec inc)
         yss (if mirror-y 7 0)
@@ -67,8 +66,9 @@
                         3))
                       (bit-and 0xff))
               ]
-          (aset screen-pixels
-                (+ x xp (* (+ y yp) ^int w)) col)
+          (if (< col 255)
+            (aset screen-pixels
+                  (+ x xp (* (+ y yp) ^int w)) col))
           (recur y ys (inc x) (xd xs)))
         ))
     ))
