@@ -50,11 +50,11 @@
          (or (= y 8) (>= (+ y yp) ^int h)) true
 
          (or (= x 8)
-             (< (+ y yp) 0)
+             (neg? (+ y yp))
              (>= (+ x xp) ^int w))
          (recur (inc y) (yd ys) 0 xss)
 
-         (< (+ x xp) 0)
+         (neg? (+ x xp))
          (recur y ys (inc x) (xd xs))
          :else
 

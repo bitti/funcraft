@@ -29,7 +29,7 @@
   ([^long a ^long b ^long c ^long d]
    (reduce (fn [s c] (+ (<< s 8) (index* c))) 0 [d c b a]))
   ([^long d]
-   (if (< d 0)
+   (if (neg? d)
      255
      (let [r (mod (div d 100) 10)
            g (mod (div d 10) 10)

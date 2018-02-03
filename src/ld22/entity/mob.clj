@@ -18,10 +18,10 @@
   (^Mob move [this xa ya]
    (assoc this
           :dir (cond
-                 (> ya 0) 0 ; down
-                 (< ya 0) 1 ; up
-                 (< xa 0) 2 ; right
-                 (> xa 0) 3 ; left
+                 (pos? ya) 0 ; down
+                 (neg? ya) 1 ; up
+                 (neg? xa) 2 ; right
+                 (pos? xa) 3 ; left
                  :else (:dir this)
                  )
           :walk-dist (if (or (not= xa 0) (not= ya 0))

@@ -25,7 +25,7 @@
           xa (if @input-handler/right (inc xa) xa)
           xa (if @input-handler/left (dec xa) xa)
           ]
-      (assoc this :mob (entity/move (:mob this) xa ya))))
+      (update this :mob entity/move xa ya)))
 
   Renderable
   (render [^Player this screen]

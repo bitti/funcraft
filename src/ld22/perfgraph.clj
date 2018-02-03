@@ -51,7 +51,7 @@
 (defn repaint [s t]
   (when t
     (swap! data #(conj (vec (drop (- (count %) 599) %)) t)))
-  (if (and s (= (mod s 30) 0))
+  (if (and s (zero? (mod s 30)))
     (.repaint plot-test))
   (if s (inc s) 0))
 
