@@ -5,7 +5,8 @@
             [ld22.gfx.input-handler :as input-handler]
             [ld22.gfx.screen :as screen]
             [ld22.gfx.sprite-sheet :as sprite-sheet]
-            [ld22.level.level :refer [grass-color]]
+            [ld22.level.level :as level]
+            [ld22.level.tile.grass :refer [grass-color]]
             [ld22.protocols :as protocols :refer [tick Tickable]])
   (:import java.awt.BorderLayout
            [java.awt.image BufferedImage BufferStrategy]

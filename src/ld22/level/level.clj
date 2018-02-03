@@ -1,12 +1,15 @@
 (ns ld22.level.level
-  (:require [ld22.gfx.colors :as colors]
-            [ld22.gfx.screen :as screen]))
+  (:require [ld22.protocols :as protocols]
+            [ld22.level.tile.grass]
+            [ld22.level.tile.tree])
+  (:import java.util.Random
+           ld22.level.tile.grass.Grass
+           ld22.level.tile.tree.Tree))
 
 (def >> bit-shift-right)
 (def << bit-shift-left)
 (def div unchecked-divide-int)
 
-(def ^:const grass-color 141)
 (def ^:const dirt-color 322)
 (def ^:const sand-color 550)
 
