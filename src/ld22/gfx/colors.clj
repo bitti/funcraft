@@ -1,7 +1,6 @@
-(ns ld22.gfx.colors)
+(ns ld22.gfx.colors
+  (:require [ld22.level.macros :refer [<<]]))
 
-(def >> bit-shift-right)
-(def << bit-shift-left)
 (def div unchecked-divide-int)
 
 (defn init
@@ -37,13 +36,15 @@
            b (mod d 10)]
        (+ (* r 36) (* g 6) b)))))
 
-(defmacro index [a b c d]
-  "Map each given color to an index of the color palette. Each color
-  is given as a decimal where each digit maps to a corresponding rgb
-  component. The allowed range for each digit is 0 to 5, giving 216
-  possible colors. Furthermore you should avoid leading zeros to avoid
-  octal interpretation.
+(defmacro index
+  "Map each given color to an index of the color palette.
+
+  Each color is given as a decimal where each digit maps to a
+  corresponding rgb component. The allowed range for each digit is 0
+  to 5, giving 216 possible colors. Furthermore you should avoid
+  leading zeros to avoid octal interpretation.
 
   Since a color index needs one byte this macro returns an int for all
   4 colors"
+  [a b c d]
   (apply index* (map eval [a b c d])))

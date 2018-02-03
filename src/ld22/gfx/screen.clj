@@ -15,7 +15,7 @@
    sheet))
 
 (defn render
-  "Render a tile from the sprite sheet based on screen coordinates,
+  "Render tile from sprite sheet based on screen coordinates,
   tile number, colors and mirror options"
   ([screen xp yp tile colors]
    (render screen xp yp tile colors (.x-offset screen) (.y-offset screen)))
