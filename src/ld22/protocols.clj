@@ -5,3 +5,6 @@
 
 (defprotocol Tickable
   (tick [this entities]))
+
+(defprotocol Movable
+  (move [this xa ya]))

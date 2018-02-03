@@ -31,13 +31,10 @@
 (def running (atom true))
 (def gr (Random.))
 
-(defrecord Game [state entities])
-
-(extend-type Game
+(defrecord Game [state entities]
   Tickable
   (tick [^Game this entities]
-    (assoc entities
-           :player (tick (:player entities) entities))))
+    (update entities :player tick entities)))
 
 (defn new-game []
   (Game.

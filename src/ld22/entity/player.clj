@@ -5,17 +5,12 @@
             [ld22.gfx.input-handler :as input-handler]
             [ld22.gfx.screen :as screen]
             [ld22.level.macros :refer [>>]]
-            [ld22.protocols :refer [Renderable Tickable]])
+            [ld22.protocols :refer [move Renderable Tickable]])
   (:import ld22.entity.mob.Mob))
 
 (def ^:const col (colors/index -1 1 220 532))
           
-(defrecord Player [^Mob mob ^int stamina])
-
-(defn new-player [x y]
-  (Player. (new-mob x y) 10))
-
-(extend-type Player
+(defrecord Player [^Mob mob ^int stamina]
   Tickable
   (tick [this entities]
     (let [ya 0
@@ -25,14 +20,14 @@
           xa (if @input-handler/right (inc xa) xa)
           xa (if @input-handler/left (dec xa) xa)
           ]
-      (update this :mob entity/move xa ya)))
+      (update this :mob move xa ya)))
 
   Renderable
   (render [^Player this screen]
-    (let [xo (- (.. this mob entity x) 8) ; offset
-          yo (- (.. this mob entity y) 11)
-          walk-dist (.. this mob walk-dist)
-          dir (.. this mob dir)
+    (let [xo (- (.. mob entity x) 8) ; offset
+          yo (- (.. mob entity y) 11)
+          walk-dist (.. mob walk-dist)
+          dir (.dir mob)
           flip1 (case dir
                   (0 1) (bit-and (>> walk-dist 3) 1)
                   2 1
@@ -63,3 +58,7 @@
       (screen/render screen (+ 8 xo (* -8 flip2)) (+ 8 yo) (+ xt 1 (* (inc yt) 32)) x-offs y-offs col
                      :mirror-x (= flip2 1))
       )))
+
+(defn new-player [x y]
+  (Player. (new-mob x y) 10))
+

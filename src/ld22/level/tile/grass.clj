@@ -10,19 +10,15 @@
                                (+ grass-color 111)
                                (+ grass-color 111)))
 
-(defrecord Grass
-    [^int x ^int y])
-
-(extend-type Grass
+(defrecord Grass [^int x ^int y]
   Renderable
   (render [this screen]
     (let [
           ;; Tile has map coordinates which need to be transformed into screen coordinates
-          x (<< (.x this) 4)
-          y (<< (.y this) 4)]
+          x (<< x 4)
+          y (<< y 4)]
       (screen/render screen x y 0 col)
       (screen/render screen (+ x 8) y 0 col)
       (screen/render screen x (+ y 8) 0 col)
-      (screen/render screen (+ x 8) (+ y 8) 0 col))
-    )
+      (screen/render screen (+ x 8) (+ y 8) 0 col)))
   )
