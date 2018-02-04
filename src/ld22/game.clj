@@ -6,18 +6,19 @@
             [ld22.gfx.screen :as screen]
             [ld22.gfx.sprite-sheet :as sprite-sheet]
             [ld22.level.level :as level]
-            [ld22.level.tile.grass :refer [grass-color]]
+            [ld22.level.macros :refer [>>]]
             [ld22.protocols :as protocols :refer [tick Tickable]])
   (:import java.awt.BorderLayout
            [java.awt.image BufferedImage BufferStrategy]
            java.util.Random
            javax.imageio.ImageIO
-           javax.swing.JFrame))
+           javax.swing.JFrame
+           ld22.entity.player.Player))
 
 (def ^:const game-name "Minicraft")
-(def ^:const height 240)
-(def ^:const width (int (/ (* height 16) 9)))
-(def ^:const nanos-per-tick (long (/ 1e9 60)))
+(def ^:const height 200)
+(def ^:const width 267 #_(int (/ (* height 16) 9)))
+(def nanos-per-tick (long (/ 1e9 60)))
 (def ^:const scale 3)
 
 (def image ^BufferedImage (new BufferedImage width height BufferedImage/TYPE_INT_RGB))
@@ -41,25 +42,26 @@
    {:lt (System/nanoTime) ; time since last tick/render
     :nt (System/nanoTime) ; time since last FPS report
     :frames 0             ; Count of frames since last FPS report
-    :sleeptime 0}         ; Idle time since last FPS report
-   {:player (player/new-player (/ width 2) (/ height 2))}))
+    :sleeptime 0          ; idle time since last FPS report
+    }
+   {:level (level/new-level 128 128)
+    :player (player/new-player (.nextInt gr (* 128 16)) (.nextInt gr (* 128 16)))}))
 
 (defn render [bs entities]
   (let [player (:player entities)
-        x (- (.. player mob entity x) (/ width 2))
-        y (- (.. player mob entity y) (/ height 2))
+        w (:w screen)
+        h (:h screen)
+        x (- (int (get-in player [:mob :entity :x])) (>> (int w)))
+        x (min (max 0 x) (- (* 16 128) w))
+        y (- (int (.. player mob entity y)) (>> (int h)))
+        y (min (max 0 y) (- (* 16 128) h))
+        screen (assoc screen
+                      :x-offset x
+                      :y-offset y)
         ]
-    (dotimes [yt 32]
-      (let [yoffs (bit-shift-left yt 3)
-            tile-yoffs (* 32 yt)]
-        (dotimes [xt 32]
-          (screen/render screen (bit-shift-left xt 3) yoffs
-                         (+ xt tile-yoffs)
-                         x y
-                         (colors/index 000 grass-color 404 555)
-                         ))))
-    (protocols/render player screen)
-    )
+    (level/render-background (:level entities) screen x y)
+    (protocols/render player screen))
+    
 
   (let [w (:w screen)
         screen-pixels ^ints (:pixels screen)]

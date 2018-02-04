@@ -46,16 +46,17 @@
           yt 14
 
           ;; Center player on screen
-          x-offs (- xo (/ (get-in screen [:sheet :width]) 2))
-          y-offs (- yo (/ (get-in screen [:sheet :height]) 2))
+          ;; screen (assoc screen
+          ;;         :x-offset (- xo (>> (:w screen) 1))
+          ;;         :y-offsset (- (>> (:h screen) 1) yo))
           ]
-      (screen/render screen (+ xo (* 8 flip1)) yo (+ xt (* yt 32)) x-offs y-offs col
+      (screen/render screen (+ xo (* 8 flip1)) yo (+ xt (* yt 32)) col
                      :mirror-x (= flip1 1))
-      (screen/render screen (+ 8 xo (* -8 flip1)) yo (+ xt 1 (* yt 32)) x-offs y-offs col
+      (screen/render screen (+ 8 xo (* -8 flip1)) yo (+ xt 1 (* yt 32)) col
                      :mirror-x (= flip1 1))
-      (screen/render screen (+ xo (* 8 flip2)) (+ 8 yo) (+ xt (* (inc yt) 32)) x-offs y-offs col
+      (screen/render screen (+ xo (* 8 flip2)) (+ 8 yo) (+ xt (* (inc yt) 32)) col
                      :mirror-x (= flip2 1))
-      (screen/render screen (+ 8 xo (* -8 flip2)) (+ 8 yo) (+ xt 1 (* (inc yt) 32)) x-offs y-offs col
+      (screen/render screen (+ 8 xo (* -8 flip2)) (+ 8 yo) (+ xt 1 (* (inc yt) 32)) col
                      :mirror-x (= flip2 1))
       )))
 
