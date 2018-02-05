@@ -1,31 +1,35 @@
-(ns ld22.level.tile.grass
+(ns ld22.level.tile.sand
   (:require [ld22.gfx.colors :as colors]
             [ld22.gfx.screen :as screen]
             [ld22.level.level :as level :refer [LevelRenderable]]
-            [ld22.level.macros :refer [<<]]))
+            [ld22.level.macros :refer [<<]])
+  (:import ld22.level.tile.grass.MayPass))
 
-(def ^:const grass-color 141)
-(def ^:const col (colors/index grass-color
-                               grass-color
-                               (+ grass-color 111)
-                               (+ grass-color 111)))
 
-(definterface ConnectsToGrass)
-(definterface MayPass)
+(def ^:const sand-color 550)
+(def ^:const col (colors/index
+                  (+ sand-color 2) sand-color (- sand-color 110) (- sand-color 110)))
 
-(defrecord Grass [^int x ^int y]
-  ConnectsToGrass
-  MayPass
+(definterface ConnectsToSand)
 
+(defrecord Sand [^int x ^int y]
+  ConnectsToSand
+  MayPass)
+
+(extend-type Sand
   LevelRenderable
   (render [this screen level]
-    (let [transition-color (colors/index* (- grass-color 111) grass-color (+ grass-color 111)
-                                          (get-in level [:colors :dirt-color]))
+    (let [
+          x (:x this)
+          y (:y this)
+          
+          transition-color (colors/index* (- sand-color 110) sand-color (- sand-color 110)
+                                         (get-in level [:colors :dirt-color]))
 
-          u  (instance? ConnectsToGrass (level/get-tile level x (dec y)))
-          l  (instance? ConnectsToGrass (level/get-tile level (dec x) y))
-          r  (instance? ConnectsToGrass (level/get-tile level (inc x) y))
-          d  (instance? ConnectsToGrass (level/get-tile level x (inc y)))
+          u  (instance? ConnectsToSand (level/get-tile level x (dec y)))
+          l  (instance? ConnectsToSand (level/get-tile level (dec x) y))
+          r  (instance? ConnectsToSand (level/get-tile level (inc x) y))
+          d  (instance? ConnectsToSand (level/get-tile level x (inc y)))
 
           ;; Tile has map coordinates which need to be transformed
           ;; to screen coordinates
@@ -44,5 +48,4 @@
       (if (and d r)
         (screen/render screen (+ x 8) (+ y 8) 3 col)
         (screen/render screen (+ x 8) (+ y 8) (+ (if r 12 13) (if d 32 64)) transition-color))
-      ))
-  )
+      )))
