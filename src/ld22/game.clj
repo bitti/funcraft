@@ -5,6 +5,7 @@
             [ld22.gfx.input-handler :as input-handler]
             [ld22.gfx.screen :as screen]
             [ld22.gfx.sprite-sheet :as sprite-sheet]
+            [ld22.level.level-gen :as level-gen]
             [ld22.level.level :as level]
             [ld22.level.macros :refer [>>]]
             [ld22.protocols :as protocols :refer [tick Tickable]])
@@ -12,12 +13,11 @@
            [java.awt.image BufferedImage BufferStrategy]
            java.util.Random
            javax.imageio.ImageIO
-           javax.swing.JFrame
-           ld22.entity.player.Player))
+           javax.swing.JFrame))
 
 (def ^:const game-name "Minicraft")
 (def ^:const height 200)
-(def ^:const width 267 #_(int (/ (* height 16) 9)))
+(def ^:const width (int (/ (* height 16) 9)))
 (def nanos-per-tick (long (/ 1e9 60)))
 (def ^:const scale 3)
 
@@ -44,7 +44,7 @@
     :frames 0             ; Count of frames since last FPS report
     :sleeptime 0          ; idle time since last FPS report
     }
-   {:level (level/new-level 128 128)
+   {:level (level-gen/new-level 128 128)
     :player (player/new-player (.nextInt gr (* 128 16)) (.nextInt gr (* 128 16)))}))
 
 (defn render [bs entities]
@@ -105,7 +105,7 @@
     (cond
       (< unprocessed nanos-per-tick)
       (do
-        (Thread/sleep (int (/ (- nanos-per-tick unprocessed) 1e6)))
+        (Thread/sleep (int (/ (- nanos-per-tick unprocessed) 10e6)))
         (assoc game
                :state (assoc state :sleeptime (+ sleeptime (- (System/nanoTime) now)))))
 

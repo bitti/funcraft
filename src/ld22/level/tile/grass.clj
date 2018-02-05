@@ -2,7 +2,7 @@
   (:require [ld22.gfx.colors :as colors]
             [ld22.gfx.screen :as screen]
             [ld22.level.macros :refer [<<]]
-            [ld22.protocols :refer [Renderable]]))
+            [ld22.level.level :refer [LevelRenderable]]))
 
 (def ^:const grass-color 141)
 (def ^:const col (colors/index grass-color
@@ -11,8 +11,8 @@
                                (+ grass-color 111)))
 
 (defrecord Grass [^int x ^int y]
-  Renderable
-  (render [this screen]
+  LevelRenderable
+  (render [this screen level]
     (let [
           ;; Tile has map coordinates which need to be transformed into screen coordinates
           x (<< x 4)
