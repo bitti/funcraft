@@ -5,26 +5,19 @@
             [ld22.level.macros :refer [<<]])
   (:import ld22.level.tile.grass.MayPass))
 
-
-(def ^:const sand-color 550)
-(def ^:const col (colors/index
-                  (+ sand-color 2) sand-color (- sand-color 110) (- sand-color 110)))
-
 (definterface ConnectsToSand)
 
 (defrecord Sand [^int x ^int y]
   ConnectsToSand
-  MayPass)
+  MayPass
 
-(extend-type Sand
   LevelRenderable
   (render [this screen level]
     (let [
-          x (:x this)
-          y (:y this)
-          
+          sand-color (get-in level [:colors :sand-color])
+          col (colors/index* (+ sand-color 2) sand-color (- sand-color 110) (- sand-color 110))
           transition-color (colors/index* (- sand-color 110) sand-color (- sand-color 110)
-                                         (get-in level [:colors :dirt-color]))
+                                          (get-in level [:colors :dirt-color]))
 
           u  (instance? ConnectsToSand (level/get-tile level x (dec y)))
           l  (instance? ConnectsToSand (level/get-tile level (dec x) y))
