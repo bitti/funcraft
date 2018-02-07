@@ -3,7 +3,7 @@
             [ld22.gfx.screen :as screen]
             [ld22.level.level :as level :refer [LevelRenderable]]
             [ld22.level.macros :refer [<<]])
-  (:import ld22.level.tile.grass.MayPass))
+  (:import ld22.protocols.MayPass))
 
 (definterface ConnectsToSand)
 

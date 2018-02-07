@@ -8,3 +8,6 @@
 
 (defprotocol Movable
   (move [this xa ya]))
+
+(definterface MayPass)
+

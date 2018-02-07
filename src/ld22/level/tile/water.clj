@@ -35,21 +35,20 @@
           r (instance? Water (level/get-tile level (inc x) y))
           d (instance? Water (level/get-tile level x (inc y)))
 
-          su (instance? ConnectsToSand (level/get-tile level x (dec y)))
-          sl (instance? ConnectsToSand (level/get-tile level (dec x) y))
-          sr (instance? ConnectsToSand (level/get-tile level (inc x) y))
-          sd (instance? ConnectsToSand (level/get-tile level x (inc y)))
+          su (and (not u) (instance? ConnectsToSand (level/get-tile level x (dec y))))
+          sl (and (not l) (instance? ConnectsToSand (level/get-tile level (dec x) y)))
+          sr (and (not r) (instance? ConnectsToSand (level/get-tile level (inc x) y)))
+          sd (and (not d) (instance? ConnectsToSand (level/get-tile level x (inc y))))
 
           x (<< x 4)
           y (<< y 4)
-          ^long tick-count (/ (System/nanoTime) nanos-per-tick)
           ]
 
-      (.setSeed random (+ (long (* (int (/ ^int (* (+ tick-count (* (- (>> x) y) 4311)))
+      (.setSeed random (+ (long (* (int (/ ^int (* (+ @level/ticks (* (- (>> x) y) 4311)))
                                            10))
                                    54687121))
                           (* x 3271612)
-                          (* y 3412987161)y))
+                          (* y 3412987161)))
 
       (if (and u l)
         (screen/render screen x y (.nextInt random 4) col (random-flip))

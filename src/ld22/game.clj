@@ -7,7 +7,7 @@
             [ld22.gfx.sprite-sheet :as sprite-sheet]
             [ld22.level.level :as level]
             [ld22.level.level-gen :as level-gen]
-            [ld22.level.macros :refer [>>]]
+            [ld22.level.macros :refer [<< >>]]
             [ld22.protocols :as protocols :refer [tick Tickable]])
   (:import java.awt.BorderLayout
            [java.awt.image BufferedImage BufferStrategy]
@@ -17,7 +17,8 @@
            ld22.entity.entity.Entity
            ld22.entity.mob.Mob
            ld22.entity.player.Player
-           ld22.gfx.screen.Screen))
+           ld22.gfx.screen.Screen
+           ld22.level.tile.grass.Grass))
 
 (def ^:const game-name "Minicraft")
 (def ^:const height 200)
@@ -43,14 +44,23 @@
     (update entities :player tick entities)))
 
 (defn new-game []
-  (Game.
-   {:lt (System/nanoTime) ; time since last tick/render
-    :nt (System/nanoTime) ; time since last FPS report
-    :frames 0             ; Count of frames since last FPS report
-    :sleeptime 0          ; idle time since last FPS report
-    }
-   {:level (level-gen/new-level 128 128)
-    :player (player/new-player (.nextInt gr (* 128 16)) (.nextInt gr (* 128 16)))}))
+  (let [level (level-gen/new-level)
+        [px py] (loop [x (.nextInt gr (:w level))
+                       y (.nextInt gr (:h level))]
+                  (if (instance? Grass (level/get-tile level x y))
+                    [(<< x 4) (<< y 4)]
+                    (recur
+                     (.nextInt gr (:w level))
+                     (.nextInt gr (:h level))
+                     )))]
+    (Game.
+     {:lt (System/nanoTime) ; time since last tick/render
+      :nt (System/nanoTime) ; time since last FPS report
+      :frames 0             ; Count of frames since last FPS report
+      :sleeptime 0          ; idle time since last FPS report
+      }
+     {:level level
+      :player (player/new-player px py)})))
 
 (defn render [^BufferStrategy bs entities]
   (let [player ^Player (:player entities)

@@ -2,7 +2,8 @@
   (:require [ld22.gfx.colors :as colors]
             [ld22.gfx.screen :as screen]
             [ld22.level.level :as level :refer [LevelRenderable]]
-            [ld22.level.macros :refer [<<]]))
+            [ld22.level.macros :refer [<<]])
+  (:import ld22.protocols.MayPass))
 
 (def ^:const grass-color 141)
 (def ^:const col (colors/index grass-color
@@ -11,7 +12,6 @@
                                (+ grass-color 111)))
 
 (definterface ConnectsToGrass)
-(definterface MayPass)
 
 (defrecord Grass [^int x ^int y ^long transition-color]
   ConnectsToGrass
