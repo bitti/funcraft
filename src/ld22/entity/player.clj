@@ -8,6 +8,8 @@
             [ld22.protocols :refer [move Renderable Tickable]])
   (:import ld22.entity.mob.Mob))
 
+(set! *unchecked-math* :warn-on-boxed)
+
 (def ^:const col (colors/index -1 1 220 532))
           
 (defrecord Player [^Mob mob ^int stamina]
@@ -23,9 +25,9 @@
       (update this :mob move xa ya)))
 
   Renderable
-  (render [^Player this screen]
-    (let [xo (- (.. mob entity x) 8) ; offset
-          yo (- (.. mob entity y) 11)
+  (render [this screen]
+    (let [xo (- ^int (get-in mob [:entity :x]) 8) ; offset
+          yo (- ^int (get-in mob [:entity :y]) 11)
           walk-dist (.. mob walk-dist)
           dir (.dir mob)
           flip1 (case dir
@@ -43,12 +45,7 @@
                2 (+ 4 (bit-and (>> walk-dist 2) 2))
                3 (+ 4 (bit-and (>> walk-dist 2) 2))
                )
-          yt 14
-
-          ;; Center player on screen
-          ;; screen (assoc screen
-          ;;         :x-offset (- xo (>> (:w screen) 1))
-          ;;         :y-offsset (- (>> (:h screen) 1) yo))
+          ^:const yt 14
           ]
       (screen/render screen (+ xo (* 8 flip1)) yo (+ xt (* yt 32)) col
                      :mirror-x (= flip1 1))

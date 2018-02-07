@@ -5,32 +5,33 @@
             [ld22.gfx.input-handler :as input-handler]
             [ld22.gfx.screen :as screen]
             [ld22.gfx.sprite-sheet :as sprite-sheet]
-            [ld22.level.level-gen :as level-gen]
             [ld22.level.level :as level]
+            [ld22.level.level-gen :as level-gen]
             [ld22.level.macros :refer [>>]]
             [ld22.protocols :as protocols :refer [tick Tickable]])
   (:import java.awt.BorderLayout
            [java.awt.image BufferedImage BufferStrategy]
            java.util.Random
            javax.imageio.ImageIO
-           javax.swing.JFrame))
+           javax.swing.JFrame
+           ld22.entity.player.Player))
 
 (def ^:const game-name "Minicraft")
 (def ^:const height 200)
 (def ^:const width (int (/ (* height 16) 9)))
-(def nanos-per-tick (long (/ 1e9 60)))
+(def ^:const nanos-per-tick (long (/ 1e9 60)))
 (def ^:const scale 3)
 
-(def image ^BufferedImage (new BufferedImage width height BufferedImage/TYPE_INT_RGB))
+(def ^BufferedImage image (new BufferedImage width height BufferedImage/TYPE_INT_RGB))
 (def sprite-sheet (sprite-sheet/new-sheet (ImageIO/read (resource "icons.png"))))
 (def screen (screen/new width height sprite-sheet))
-(def colors (int-array (colors/init)))
+(def ^"[I" colors (int-array (colors/init)))
 
 ;; Not using a macro here preserves type hints
-(def pixels ^ints (.getData ^java.awt.image.DataBufferInt
-                            (.getDataBuffer (.getRaster ^BufferedImage image))))
+(def ^"[I" pixels (.getData ^java.awt.image.DataBufferInt
+                            (.getDataBuffer (.getRaster image))))
 (def running (atom true))
-(def gr (Random.))
+(def ^Random gr (Random.))
 
 (defrecord Game [state entities]
   Tickable
@@ -47,8 +48,8 @@
    {:level (level-gen/new-level 128 128)
     :player (player/new-player (.nextInt gr (* 128 16)) (.nextInt gr (* 128 16)))}))
 
-(defn render [bs entities]
-  (let [player (:player entities)
+(defn render [^BufferStrategy bs entities]
+  (let [player ^Player (:player entities)
         w (:w screen)
         h (:h screen)
         x (- (int (get-in player [:mob :entity :x])) (>> (int w)))
@@ -62,7 +63,6 @@
     (level/render-background (:level entities) screen x y)
     (protocols/render player screen))
     
-
   (let [w (:w screen)
         screen-pixels ^ints (:pixels screen)]
     (dotimes [y (:h screen)]
@@ -70,15 +70,15 @@
         (dotimes [x w]
           (->> (+ yoffs x)
                (aget screen-pixels)
-               (aget ^ints colors)
-               (aset ^ints pixels (+ yoffs x)))
+               (aget colors)
+               (aset pixels (+ yoffs x)))
           )
         )))
 
-  (doto (.getDrawGraphics ^BufferStrategy bs)
+  (doto (.getDrawGraphics  bs)
     (.drawImage image 0 0 (* scale width) (* scale height) nil)
     (.dispose))
-  (.show ^BufferStrategy bs))
+  (.show bs))
 
 (def frame
   (delay (doto (new JFrame game-name)
@@ -93,11 +93,11 @@
 
 (def bs (delay ^BufferStrategy (.getBufferStrategy ^JFrame @frame)))
 
-(defn run [^Game {{:keys [ lt
-                    ^int nt
-                    ^int frames
-                    sleeptime
-                    ] :as state} :state
+(defn run [^Game {{:keys [^long lt
+                          ^int nt
+                          ^int frames
+                          ^long sleeptime
+                          ] :as state} :state
             entities :entities :as game}]
   (if @running (send *agent* run))
   (let [now (System/nanoTime)

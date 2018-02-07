@@ -1,18 +1,18 @@
 (ns ld22.gfx.colors
   (:require [ld22.level.macros :refer [<<]]))
 
-(def div unchecked-divide-int)
+(definline div [x y] `(unchecked-divide-int ~x ~y))
 
 (defn init
   "Initialize a 216 color palette"
   []
-  (for [r (range 6)
-        g (range 6)
-        b (range 6)]
+  (for [^int r (range 6)
+        ^int g (range 6)
+        ^int b (range 6)]
     (let [
-          rr (int (/ (* r 255) 5))
-          gg (int (/ (* g 255) 5))
-          bb (int (/ (* b 255) 5))
+          ^int rr (/ (* r 255) 5)
+          ^int gg (/ (* g 255) 5)
+          ^int bb (/ (* b 255) 5)
 
           ;; Use luma coefficients to move colors towards gray,
           ;; therefore lowering 'saturation', which gives an effect
@@ -25,15 +25,16 @@
       (bit-or (<< r1 16) (<< g1 8) b1)
       )))
 
-(defn index*
+(defn index* ^long
   ([^long a ^long b ^long c ^long d]
-   (reduce (fn [s c] (+ (<< s 8) (index* c))) 0 [d c b a]))
+   (reduce (fn [^long s ^long c] (+ (<< s 8) ^long (index* c)))
+           0 [d c b a]))
   ([^long d]
    (if (neg? d)
      255
-     (let [r (mod (div d 100) 10)
-           g (mod (div d 10) 10)
-           b (mod d 10)]
+     (let [^int r (mod (div d 100) 10)
+           ^int g (mod (div d 10) 10)
+           ^int b (mod d 10)]
        (+ (* r 36) (* g 6) b)))))
 
 (defmacro index

@@ -9,7 +9,7 @@
            ld22.level.tile.water.Water
            ))
 
-(def random (Random.))
+(def ^Random random (Random.))
 
 (def ^:const dirt-color 322)
 (def ^:const sand-color 550)

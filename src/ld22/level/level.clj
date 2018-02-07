@@ -3,7 +3,7 @@
   (:import java.io.Writer))
 
 (defprotocol LevelRenderable
-  (render [this screen level]))
+  (render [this ^Screen screen ^Level level]))
 
 (defrecord Level [^int w ^int h colors tiles])
 

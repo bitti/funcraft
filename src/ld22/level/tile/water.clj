@@ -6,9 +6,11 @@
   (:import java.util.Random
            ld22.level.tile.sand.ConnectsToSand))
 
+(set! *unchecked-math* true)
+
 (def ^:const col (colors/index 5 5 115 115))
 (def ^:const nanos-per-tick (long (/ 1e9 60)))
-(def random (Random.))
+(def ^Random random (Random.))
 
 (definterface ConnectsToWater)
 (definterface MaySwim)
@@ -25,8 +27,8 @@
   LevelRenderable
   (render [this screen level]
     (let [
-          dirt-color (get-in level [:colors :dirt-color])
-          sand-color (get-in level [:colors :sand-color])
+          ^int dirt-color (get-in level [:colors :dirt-color])
+          ^int sand-color (get-in level [:colors :sand-color])
           transition-color1 (colors/index* 3 5 (- dirt-color 111) dirt-color)
           transition-color2 (colors/index* 3 5 (- sand-color 110) sand-color)
 
@@ -42,10 +44,12 @@
 
           x (<< x 4)
           y (<< y 4)
-          tick-count (int (/ (System/nanoTime) nanos-per-tick))
+          ^long tick-count (/ (System/nanoTime) nanos-per-tick)
           ]
 
-      (.setSeed random (+ (long (* (int (/ (* (+ tick-count (* (- (>> x) y) 4311))) 10)) 54687121))
+      (.setSeed random (+ (long (* (int (/ ^int (* (+ tick-count (* (- (>> x) y) 4311)))
+                                           10))
+                                   54687121))
                           (* x 3271612)
                           (* y 3412987161)y))
 
