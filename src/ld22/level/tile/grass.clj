@@ -13,16 +13,13 @@
 (definterface ConnectsToGrass)
 (definterface MayPass)
 
-(defrecord Grass [^int x ^int y]
+(defrecord Grass [^int x ^int y ^long transition-color]
   ConnectsToGrass
   MayPass
 
   LevelRenderable
   (render [this screen level]
-    (let [transition-color (colors/index* (- grass-color 111) grass-color (+ grass-color 111)
-                                          (get-in level [:colors :dirt-color]))
-
-          u  (instance? ConnectsToGrass (level/get-tile level x (dec y)))
+    (let [u  (instance? ConnectsToGrass (level/get-tile level x (dec y)))
           l  (instance? ConnectsToGrass (level/get-tile level (dec x) y))
           r  (instance? ConnectsToGrass (level/get-tile level (inc x) y))
           d  (instance? ConnectsToGrass (level/get-tile level x (inc y)))

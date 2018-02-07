@@ -1,6 +1,7 @@
 (ns ld22.level.tile.water
   (:require [ld22.gfx.colors :as colors]
             [ld22.gfx.screen :as screen]
+            [ld22.level.tile.sand]
             [ld22.level.level :as level :refer [LevelRenderable]]
             [ld22.level.macros :refer [<< >>]])
   (:import java.util.Random
@@ -20,19 +21,16 @@
     [:mirror-x (zero? (bit-and i 1))
      :mirror-y (zero? (bit-and i 2))]))
 
-(defrecord Water [^int x ^int y]
+(defrecord Water [^int x
+                  ^int y
+                  ^long transition-color1
+                  ^long transition-color2]
   ConnectsToSand
   MaySwim
 
   LevelRenderable
   (render [this screen level]
-    (let [
-          ^int dirt-color (get-in level [:colors :dirt-color])
-          ^int sand-color (get-in level [:colors :sand-color])
-          transition-color1 (colors/index* 3 5 (- dirt-color 111) dirt-color)
-          transition-color2 (colors/index* 3 5 (- sand-color 110) sand-color)
-
-          u (instance? Water (level/get-tile level x (dec y)))
+    (let [u (instance? Water (level/get-tile level x (dec y)))
           l (instance? Water (level/get-tile level (dec x) y))
           r (instance? Water (level/get-tile level (inc x) y))
           d (instance? Water (level/get-tile level x (inc y)))

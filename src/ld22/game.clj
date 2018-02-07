@@ -14,7 +14,10 @@
            java.util.Random
            javax.imageio.ImageIO
            javax.swing.JFrame
-           ld22.entity.player.Player))
+           ld22.entity.entity.Entity
+           ld22.entity.mob.Mob
+           ld22.entity.player.Player
+           ld22.gfx.screen.Screen))
 
 (def ^:const game-name "Minicraft")
 (def ^:const height 200)
@@ -24,7 +27,7 @@
 
 (def ^BufferedImage image (new BufferedImage width height BufferedImage/TYPE_INT_RGB))
 (def sprite-sheet (sprite-sheet/new-sheet (ImageIO/read (resource "icons.png"))))
-(def screen (screen/new width height sprite-sheet))
+(def ^Screen screen (screen/new width height sprite-sheet))
 (def ^"[I" colors (int-array (colors/init)))
 
 ;; Not using a macro here preserves type hints
@@ -35,7 +38,8 @@
 
 (defrecord Game [state entities]
   Tickable
-  (tick [^Game this entities]
+  (tick [this entities]
+    (protocols/tick (:level entities) entities)
     (update entities :player tick entities)))
 
 (defn new-game []
@@ -50,18 +54,18 @@
 
 (defn render [^BufferStrategy bs entities]
   (let [player ^Player (:player entities)
-        w (:w screen)
-        h (:h screen)
+        w (.w screen)
+        h (.h screen)
         x (- (int (get-in player [:mob :entity :x])) (>> (int w)))
         x (min (max 0 x) (- (* 16 128) w))
-        y (- (int (.. player mob entity y)) (>> (int h)))
+        y (- (int (.. ^Entity (. ^Mob (. ^Player player mob) entity) ^int y)) (>> (int h)))
         y (min (max 0 y) (- (* 16 128) h))
         screen (assoc screen
                       :x-offset x
                       :y-offset y)
         ]
-    (level/render-background (:level entities) screen x y)
-    (protocols/render player screen))
+    (level/render-background (:level entities) screen)
+    (level/render player screen (:level entities)))
     
   (let [w (:w screen)
         screen-pixels ^ints (:pixels screen)]

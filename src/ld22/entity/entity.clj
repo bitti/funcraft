@@ -6,8 +6,8 @@
   (move [this xa ya]
     #_ {:pre [(or (zero? xa) (zero? ya))]}
     (assoc this
-           :x (+ xa (:x this))
-           :y (+ ya (:y this))))
+           :x (+ ^int xa x)
+           :y (+ ^int ya y)))
   )
 
 (defn intersects [^Entity e x0 y0 x1 y1]
