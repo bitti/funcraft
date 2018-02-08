@@ -103,47 +103,68 @@
                (>> step-size)
                (>> half-step))))
     values))
- 
+
 (defn create-top-map []
   (let [^doubles mnoise1 (noise-map 16)
         ^doubles mnoise2 (noise-map 16)
         ^doubles mnoise3 (noise-map 16)
-        
+
         ^doubles noise1 (noise-map 32)
         ^doubles noise2 (noise-map 32)
+
+        map (vec
+             (for [y (range 0 h)
+                   x (range 0 w)
+                   :let [i (+ x (* y w))
+                         val (-> (aget noise1 i)
+                                 (- (aget noise2 i))
+                                 (Math/abs)
+                                 (* 3)
+                                 (- 2))
+                         mval (-> (aget mnoise1 i)
+                                  (- (aget mnoise2 i))
+                                  (Math/abs)
+                                  (- (aget mnoise3 i))
+                                  (Math/abs)
+                                  (* 3)
+                                  (- 2))
+                         dist (max
+                               (Math/abs (dec (* (/ x (- w 1.0)) 2)))
+                               (Math/abs (dec (* (/ y (- h 1.0)) 2))))
+                         dist (Math/pow dist 16)
+                         val (+ val 1 (* dist -20))
+                         ]]
+               (if (< val -0.5)
+                 (Water. x y
+                         (colors/index 3 5 (- dirt-color 111) dirt-color)
+                         (colors/index 3 5 (- sand-color 110) sand-color))
+                 (if (and (> val 0.5) (< mval -1.5))
+                   (Rock. x y)
+                   (Grass. x y
+                           (colors/index (- grass-color 111) grass-color
+                                         (+ grass-color 111)
+                                         dirt-color))))))
         ]
-    (vec
-     (for [y (range 0 h)
-           x (range 0 w)
-           :let [i (+ x (* y w))
-                 val (-> (aget noise1 i)
-                         (- (aget noise2 i))
-                         (Math/abs)
-                         (* 3)
-                         (- 2))
-                 mval (-> (aget mnoise1 i)
-                          (- (aget mnoise2 i))
-                          (Math/abs)
-                          (- (aget mnoise3 i))
-                          (Math/abs)
-                          (* 3)
-                          (- 2))
-                 dist (max
-                       (Math/abs (dec (* (/ x (- w 1.0)) 2)))
-                       (Math/abs (dec (* (/ y (- h 1.0)) 2))))
-                 dist (Math/pow dist 16)
-                 val (+ val 1 (* dist -20))
-                 ]]
-       (if (< val 0.5)
-         (Water. x y
-                 (colors/index* 3 5 (- dirt-color 111) dirt-color)
-                 (colors/index* 3 5 (- sand-color 110) sand-color))
-         (if (< mval -1.5)
-           (Rock. x y)
-           (Grass. x y
-                   (colors/index* (- grass-color 111) grass-color (+ grass-color 111)
-                                  dirt-color))))
-       ))))
+    (apply assoc map
+           (flatten
+            (for [i (range 0 (int (/ (* w h) 2800)))
+                  :let [xs (.nextInt random w)
+                        ys (.nextInt random h)]]
+              (for [k (range 0 10)
+                    :let [x (+ xs (.nextInt random 21) -10)
+                          y (+ ys (.nextInt random 21) -10)]]
+                (for [j (range 0 100)
+                      :let [xo (+ x (.nextInt random 5) (- (.nextInt random 5)))
+                            yo (+ y (.nextInt random 5) (- (.nextInt random 5)))]]
+                  (for [yy (range (dec yo) (+ yo 2))
+                        xx (range (dec xo) (+ xo 2))
+                        :let [i (+ xx (* yy w))]
+                        :when (and (< -1 xx w) (< -1 yy h)
+                                   (instance? Grass (map i)))
+                        ]
+                    [i (Sand. xx yy)]
+                    )
+                  )))))))
 
 (defn inspect-map []
   (let [img (BufferedImage. w h BufferedImage/TYPE_INT_RGB)
@@ -157,11 +178,9 @@
                     Grass 0x208020
                     Water 0x000080
                     Rock 0xa0a0a0
-                    Tree 003000
-                    0x000000)
-                  #_  (if (neg? v)
-                        (int (* v -256))
-                        (int (* (int (* 256 v)) 0x010101))))))
+                    Tree 0x003000
+                    Sand 0xa0a040
+                    0x000000))))
         (.setRGB img 0 0 w h pixels 0 w)
         (if
             (zero?
@@ -173,7 +192,7 @@
               JOptionPane/QUESTION_MESSAGE
               (ImageIcon. (.getScaledInstance img (* w 8) (* h 8) Image/SCALE_AREA_AVERAGING))
               (into-array String ["Another" "Quit"]) ; Button options
-              nil                                   ; start value
+              nil                                    ; start value
               ))
           (recur)
           )))
