@@ -1,7 +1,7 @@
 (ns ld22.level.level-gen
   (:require [ld22.level.tile grass rock sand tree water]
             [ld22.gfx.colors :as colors]
-            [ld22.level.macros :refer [>>]])
+            [ld22.level.macros :refer [<< >>]])
   (:import java.awt.Image
            java.awt.image.BufferedImage
            java.lang.Math
@@ -104,114 +104,132 @@
                (>> half-step))))
     values))
 
-(defn create-top-map []
+(defn- base-top-map []
   (let [^doubles mnoise1 (noise-map 16)
         ^doubles mnoise2 (noise-map 16)
         ^doubles mnoise3 (noise-map 16)
 
         ^doubles noise1 (noise-map 32)
         ^doubles noise2 (noise-map 32)
-
-        map (vec
-             (for [y (range 0 h)
-                   x (range 0 w)
-                   :let [i (+ x (* y w))
-                         val (-> (aget noise1 i)
-                                 (- (aget noise2 i))
-                                 (Math/abs)
-                                 (* 3)
-                                 (- 2))
-                         mval (-> (aget mnoise1 i)
-                                  (- (aget mnoise2 i))
-                                  (Math/abs)
-                                  (- (aget mnoise3 i))
-                                  (Math/abs)
-                                  (* 3)
-                                  (- 2))
-                         dist (max
-                               (Math/abs (dec (* (/ x (- w 1.0)) 2)))
-                               (Math/abs (dec (* (/ y (- h 1.0)) 2))))
-                         dist (Math/pow dist 16)
-                         val (+ val 1 (* dist -20))
-                         ]]
-               (if (< val -0.5)
-                 (Water. x y
-                         (colors/index 3 5 (- dirt-color 111) dirt-color)
-                         (colors/index 3 5 (- sand-color 110) sand-color))
-                 (if (and (> val 0.5) (< mval -1.5))
-                   (Rock. x y)
-                   (Grass. x y
-                           (colors/index (- grass-color 111) grass-color
-                                         (+ grass-color 111)
-                                         dirt-color))))))
         ]
-    (apply assoc map
-           (flatten
-            (for [i (range 0 (int (/ (* w h) 2800)))
-                  :let [xs (.nextInt random w)
-                        ys (.nextInt random h)]]
-              (for [k (range 0 10)
-                    :let [x (+ xs (.nextInt random 21) -10)
-                          y (+ ys (.nextInt random 21) -10)]]
-                (for [j (range 0 100)
-                      :let [xo (+ x (.nextInt random 5) (- (.nextInt random 5)))
-                            yo (+ y (.nextInt random 5) (- (.nextInt random 5)))]]
-                  (for [yy (range (dec yo) (+ yo 2))
-                        xx (range (dec xo) (+ xo 2))
-                        :let [i (+ xx (* yy w))]
-                        :when (and (< -1 xx w) (< -1 yy h)
-                                   (instance? Grass (map i)))
-                        ]
-                    [i (Sand. xx yy)]
-                    )
-                  )))))))
+    (vec
+     (for [^int y (range 0 h)
+           ^int x (range 0 w)
+           :let [i (+ x (* y w))
+                 val (-> (aget noise1 i)
+                         (- (aget noise2 i))
+                         (Math/abs)
+                         (* 3)
+                         (- 2))
+                 mval (-> (aget mnoise1 i)
+                          (- (aget mnoise2 i))
+                          (Math/abs)
+                          (- (aget mnoise3 i))
+                          (Math/abs)
+                          (* 3)
+                          (- 2))
+                 dist (max
+                       (Math/abs (dec (* (/ x (- w 1.0)) 2)))
+                       (Math/abs (dec (* (/ y (- h 1.0)) 2))))
+                 dist (Math/pow dist 16)
+                 val (+ val 1 (* dist -20))
+                 ]]
+       (if (< val -0.5)
+         (Water. x y
+                 (colors/index 3 5 (- dirt-color 111) dirt-color)
+                 (colors/index 3 5 (- sand-color 110) sand-color))
+         (if (and (> val 0.5) (< mval -1.5))
+           (Rock. x y)
+           (Grass. x y
+                   (colors/index (- grass-color 111) grass-color
+                                 (+ grass-color 111)
+                                 dirt-color))))))))
+
+(defn- even-map-distribution []
+  (repeatedly #(vector (.nextInt random w) (.nextInt random h))))
+
+(defn- even-distribution
+  "Evenly distributed random integers around [x y] with a manhatten
+  distance of d"
+  [^long x ^long y ^long d]
+  (repeatedly
+   #(vector
+     (+ x (.nextInt random (inc (<< d))) (- d))
+     (+ y (.nextInt random (inc (<< d))) (- d))
+     )))
+
+(defn- triangular-distribution [^long x ^long d]
+  (+ x (.nextInt random d) (- (.nextInt random d))))
+
+(defn- pyramid-distribution
+  "Pyramidial distributed random integers around [x y] with a manhatten
+  distance of d"
+  [^long x ^long y ^long d]
+  (repeatedly
+   #(vector (triangular-distribution x d)
+            (triangular-distribution y d))))
+
+(defn- sand-for-map [m]
+  (apply assoc m
+         (flatten
+          (for [[xs ys] (take (int (/ (* w h) 2800)) (even-map-distribution))]
+            (for [[x y] (take 10 (even-distribution xs ys 10))]
+              (for [[^int xo ^int yo] (take 100 (pyramid-distribution x y 15))]
+                (for [^int yy (range (dec yo) (+ yo 2))
+                      ^int xx (range (dec xo) (+ xo 2))
+                      :let [i (+ xx (* yy w))]
+                      :when (and (< -1 xx w) (< -1 yy h)
+                                 (instance? Grass (m i)))
+                      ]
+                  [i (Sand. xx yy)]
+                  )
+                ))))))
+
+(defn- trees-for-map [m]
+  (apply assoc m
+         (flatten
+          (for [[x y] (take (int (/ (* w h) 400)) (even-map-distribution))]
+            (for [[^int xx ^int yy] (take 200 (pyramid-distribution x y 15))
+                  :let [i (+ xx (* yy w))]
+                  :when (and (< -1 xx w) (< -1 yy h)
+                             (instance? Grass (m i)))]
+              [i (Tree. xx yy)])))))
+
+(defn create-top-map []
+  (-> (base-top-map)
+      sand-for-map
+      trees-for-map))
 
 (defn inspect-map []
   (let [img (BufferedImage. w h BufferedImage/TYPE_INT_RGB)
         pixels (int-array (* w h))]
-
     (loop []
-        (let [map (create-top-map)]
-          (dotimes [i (* w h)]
-            (aset pixels i
-                  (condp instance? (map i)
-                    Grass 0x208020
-                    Water 0x000080
-                    Rock 0xa0a0a0
-                    Tree 0x003000
-                    Sand 0xa0a040
-                    0x000000))))
-        (.setRGB img 0 0 w h pixels 0 w)
-        (if
-            (zero?
-             (JOptionPane/showOptionDialog
-              nil                            ; parent Component
-              nil                            ; message
-              "Map Generator"                ; Title
-              JOptionPane/YES_NO_OPTION
-              JOptionPane/QUESTION_MESSAGE
-              (ImageIcon. (.getScaledInstance img (* w 8) (* h 8) Image/SCALE_AREA_AVERAGING))
-              (into-array String ["Another" "Quit"]) ; Button options
-              nil                                    ; start value
-              ))
+      (doall
+       (map-indexed
+        (fn [i tile]
+          (aset pixels i
+                (condp instance? tile
+                  Grass 0x208020
+                  Water 0x000080
+                  Rock 0xa0a0a0
+                  Tree 0x003000
+                  Sand 0xa0a040
+                  0x000000)))
+        (create-top-map)))
+      (.setRGB img 0 0 w h pixels 0 w)
+      (if (zero?
+           (JOptionPane/showOptionDialog
+            nil                         ; parent Component
+            nil                         ; message
+            "Map Generator"             ; Title
+            JOptionPane/YES_NO_OPTION
+            JOptionPane/QUESTION_MESSAGE
+            (ImageIcon. (.getScaledInstance img (* w 8) (* h 8) Image/SCALE_AREA_AVERAGING))
+            (into-array String ["Another" "Quit"]) ; Button options
+            nil                                    ; start value
+            ))
           (recur)
-          )))
-
-(defn generate [^long w ^long h]
-    (vec
-     (for [j (range h)
-           i (range w)
-           ]
-       (condp > (.nextDouble random)
-         0.3 (Water. i j
-                     (colors/index* 3 5 (- dirt-color 111) dirt-color)
-                     (colors/index* 3 5 (- sand-color 110) sand-color))
-         0.5 (Sand. i j)
-         (Grass. i j
-                 (colors/index* (- grass-color 111) grass-color (+ grass-color 111)
-                                dirt-color))
-         )))
-    ))
+          ))))
 
 (defn new-level []
   (Level. w h
