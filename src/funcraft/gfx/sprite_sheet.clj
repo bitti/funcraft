@@ -1,4 +1,4 @@
-(ns ld22.gfx.sprite-sheet
+(ns funcraft.gfx.sprite-sheet
   (:import java.awt.image.BufferedImage))
 
 (defstruct sheet

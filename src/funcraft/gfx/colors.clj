@@ -1,5 +1,5 @@
-(ns ld22.gfx.colors
-  (:require [ld22.level.macros :refer [<<]]))
+(ns funcraft.gfx.colors
+  (:require [funcraft.level.macros :refer [<<]]))
 
 (definline div [x y] `(unchecked-divide-int ~x ~y))
 

@@ -1,5 +1,5 @@
-(ns ld22.entity.entity
-  (:require [ld22.protocols :refer [Movable]]))
+(ns funcraft.entity.entity
+  (:require [funcraft.protocols :refer [Movable]]))
 
 (defrecord Entity [^int x ^int y ^int xr ^int yr]
   Movable

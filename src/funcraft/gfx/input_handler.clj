@@ -1,4 +1,4 @@
-(ns ld22.gfx.input-handler
+(ns funcraft.gfx.input-handler
   (:require [clojure.string :as string])
   (:import [java.awt.event KeyEvent KeyListener]))
 
@@ -15,6 +15,7 @@
 (def down (atom false))
 (def left (atom false))
 (def right (atom false))
+(def attack (atom false))
 
 (defn toggle-key [state key]
   (if key
@@ -26,6 +27,9 @@
      (~KeyEvent/VK_DOWN ~KeyEvent/VK_S) down
      (~KeyEvent/VK_LEFT ~KeyEvent/VK_A) left
      (~KeyEvent/VK_RIGHT ~KeyEvent/VK_D) right
+     (~KeyEvent/VK_SPACE ~KeyEvent/VK_CONTROL
+      ~KeyEvent/VK_INSERT ~KeyEvent/VK_ENTER
+      ~KeyEvent/VK_C ~KeyEvent/VK_NUMPAD0) attack
     nil))
 
 (def ^:const vk-left KeyEvent/VK_LEFT)

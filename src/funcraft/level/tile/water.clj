@@ -1,13 +1,13 @@
-(ns ld22.level.tile.water
-  (:require [ld22.gfx.colors :as colors]
-            [ld22.gfx.screen :as screen]
-            [ld22.level.tile.sand]
-            [ld22.level.level :as level :refer [LevelRenderable]]
-            [ld22.level.macros :refer [<< >>]])
-  (:import java.util.Random
-           ld22.level.tile.sand.ConnectsToSand))
+(ns funcraft.level.tile.water
+  (:require [funcraft.gfx.colors :as colors]
+            [funcraft.gfx.screen :as screen]
+            [funcraft.level.level :as level :refer [LevelRenderable]]
+            [funcraft.level.macros :refer [<< >>]]
+            funcraft.level.tile.sand)
+  (:import funcraft.level.tile.sand.ConnectsToSand
+           java.util.Random))
 
-(set! *unchecked-math* true)
+;(set! *unchecked-math* true)
 
 (def ^:const col (colors/index 5 5 115 115))
 (def ^:const nanos-per-tick (long (/ 1e9 60)))

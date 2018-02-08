@@ -1,10 +1,10 @@
-(ns ld22.level.tile.tree
-  (:require [ld22.gfx.colors :as colors]
-            [ld22.gfx.screen :as screen]
-            [ld22.level.level :as level :refer [LevelRenderable]]
-            [ld22.level.macros :refer [<<]]
-            [ld22.level.tile.grass :refer [grass-color]])
-  (:import ld22.level.tile.grass.ConnectsToGrass))
+(ns funcraft.level.tile.tree
+  (:require [funcraft.gfx.colors :as colors]
+            [funcraft.gfx.screen :as screen]
+            [funcraft.level.level :as level :refer [LevelRenderable]]
+            [funcraft.level.macros :refer [<<]]
+            [funcraft.level.tile.grass :refer [grass-color]])
+  (:import funcraft.level.tile.grass.ConnectsToGrass))
 
 (def col (colors/index 10 30 151 grass-color))
 (def bark-col1 (colors/index 10 30 430 grass-color)) ; Light bark color

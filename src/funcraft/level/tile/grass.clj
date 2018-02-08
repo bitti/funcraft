@@ -1,9 +1,9 @@
-(ns ld22.level.tile.grass
-  (:require [ld22.gfx.colors :as colors]
-            [ld22.gfx.screen :as screen]
-            [ld22.level.level :as level :refer [LevelRenderable]]
-            [ld22.level.macros :refer [<<]])
-  (:import ld22.protocols.MayPass))
+(ns funcraft.level.tile.grass
+  (:require [funcraft.gfx.colors :as colors]
+            [funcraft.gfx.screen :as screen]
+            [funcraft.level.level :as level :refer [LevelRenderable]]
+            [funcraft.level.macros :refer [<<]])
+  (:import funcraft.protocols.MayPass))
 
 (def ^:const grass-color 141)
 (def ^:const col (colors/index grass-color

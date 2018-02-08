@@ -1,14 +1,14 @@
-(ns ld22.entity.player
-  (:require [ld22.entity.mob :as mob]
-            [ld22.gfx.colors :as colors]
-            [ld22.gfx.input-handler :as input-handler]
-            [ld22.gfx.screen :as screen]
-            [ld22.level.level :as level :refer [LevelRenderable]]
-            [ld22.level.macros :refer [>>]]
-            [ld22.protocols :refer [move Tickable]])
-  (:import ld22.entity.mob.Mob))
+(ns funcraft.entity.player
+  (:require [funcraft.entity.mob :as mob]
+            [funcraft.gfx.colors :as colors]
+            [funcraft.gfx.input-handler :as input-handler]
+            [funcraft.gfx.screen :as screen]
+            [funcraft.level.level :as level :refer [LevelRenderable]]
+            [funcraft.level.macros :refer [>>]]
+            [funcraft.protocols :refer [move Tickable]])
+  (:import funcraft.entity.mob.Mob))
 
-(set! *unchecked-math* :warn-on-boxed)
+;(set! *unchecked-math* :warn-on-boxed)
 
 (def ^:const col (colors/index -1 1 220 532))
 (def ^:const water-color1 (colors/index -1 -1 115 335))
@@ -24,6 +24,7 @@
           xa (if @input-handler/right (inc xa) xa)
           xa (if @input-handler/left (dec xa) xa)
           ]
+;      (if @input-handler/attack)
       (update this :mob move xa ya)))
 
   LevelRenderable

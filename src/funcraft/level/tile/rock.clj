@@ -1,8 +1,8 @@
-(ns ld22.level.tile.rock
-  (:require [ld22.gfx.colors :as colors]
-            [ld22.gfx.screen :as screen]
-            [ld22.level.level :as level :refer [LevelRenderable]]
-            [ld22.level.macros :refer [<<]]))
+(ns funcraft.level.tile.rock
+  (:require [funcraft.gfx.colors :as colors]
+            [funcraft.gfx.screen :as screen]
+            [funcraft.level.level :as level :refer [LevelRenderable]]
+            [funcraft.level.macros :refer [<<]]))
 
 (def ^:const main-color 444)
 (def ^:const dark-color 111)

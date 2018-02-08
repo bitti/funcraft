@@ -1,12 +1,12 @@
-(ns ld22.entity.mob
-  (:require [ld22.level.level :as level]
-            [ld22.level.macros :refer [>>]]
-            [ld22.level.tile.water]
-            [ld22.entity.entity]
-            [ld22.protocols :refer [Movable move]])
-  (:import ld22.entity.entity.Entity
-           ld22.level.level.Level
-           ld22.level.tile.water.Water))
+(ns funcraft.entity.mob
+  (:require funcraft.entity.entity
+            [funcraft.level.level :as level]
+            [funcraft.level.macros :refer [>>]]
+            funcraft.level.tile.water
+            [funcraft.protocols :refer [Movable move]])
+  (:import funcraft.entity.entity.Entity
+           funcraft.level.level.Level
+           funcraft.level.tile.water.Water))
 
 (def ^:const max-health 10)
 

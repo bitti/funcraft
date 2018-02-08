@@ -1,7 +1,7 @@
-(ns ld22.gfx.screen
-  (:require [ld22.level.macros :refer [<< >>]]))
+(ns funcraft.gfx.screen
+  (:require [funcraft.level.macros :refer [<< >>]]))
 
-(set! *unchecked-math* true)
+;(set! *unchecked-math* true)
 
 (defprotocol Render
   (render

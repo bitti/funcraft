@@ -1,4 +1,4 @@
-(ns ld22.perfgraph
+(ns funcraft.perfgraph
   (:import [java.awt Color Graphics Graphics2D RenderingHints]
            [javax.swing JFrame JPanel]))
 

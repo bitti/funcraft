@@ -1,4 +1,4 @@
-(ns ld22.level.macros)
+(ns funcraft.level.macros)
 
 (defmacro >>
   ([n] `(bit-shift-right ~n 1))

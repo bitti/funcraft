@@ -1,18 +1,22 @@
-(ns ld22.level.level-gen
-  (:require [ld22.level.tile grass rock sand tree water]
-            [ld22.gfx.colors :as colors]
-            [ld22.level.macros :refer [<< >>]])
-  (:import java.awt.Image
+(ns funcraft.level.level-gen
+  (:require [funcraft.gfx.colors :as colors]
+            [funcraft.level.macros :refer [<< >>]]
+            funcraft.level.tile.grass
+            funcraft.level.tile.rock
+            funcraft.level.tile.sand
+            funcraft.level.tile.tree
+            funcraft.level.tile.water)
+  (:import funcraft.level.tile.grass.Grass
+           funcraft.level.tile.rock.Rock
+           funcraft.level.tile.sand.Sand
+           funcraft.level.tile.tree.Tree
+           funcraft.level.tile.water.Water
+           java.awt.Image
            java.awt.image.BufferedImage
            java.lang.Math
            java.util.Random
            [javax.swing ImageIcon JOptionPane]
-           ld22.level.level.Level
-           ld22.level.tile.grass.Grass
-           ld22.level.tile.rock.Rock
-           ld22.level.tile.sand.Sand
-           ld22.level.tile.tree.Tree
-           ld22.level.tile.water.Water))
+           funcraft.level.level.Level))
 
 (def ^Random random (Random.))
 

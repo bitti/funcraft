@@ -1,26 +1,26 @@
-(ns ld22.game
+(ns funcraft.game
   (:require [clojure.java.io :refer [resource]]
-            [ld22.entity.player :as player]
-            [ld22.gfx.colors :as colors]
-            [ld22.gfx.input-handler :as input-handler]
-            [ld22.gfx.screen :as screen]
-            [ld22.gfx.sprite-sheet :as sprite-sheet]
-            [ld22.level.level :as level]
-            [ld22.level.level-gen :as level-gen]
-            [ld22.level.macros :refer [<< >>]]
-            [ld22.protocols :as protocols :refer [tick Tickable]])
-  (:import java.awt.BorderLayout
+            [funcraft.entity.player :as player]
+            [funcraft.gfx.colors :as colors]
+            [funcraft.gfx.input-handler :as input-handler]
+            [funcraft.gfx.screen :as screen]
+            [funcraft.gfx.sprite-sheet :as sprite-sheet]
+            [funcraft.level.level :as level]
+            [funcraft.level.level-gen :as level-gen]
+            [funcraft.level.macros :refer [<< >>]]
+            [funcraft.protocols :as protocols :refer [tick Tickable]])
+  (:import funcraft.entity.player.Player
+           funcraft.gfx.screen.Screen
+           java.awt.BorderLayout
            [java.awt.image BufferedImage BufferStrategy]
            java.util.Random
            javax.imageio.ImageIO
            javax.swing.JFrame
-           ld22.entity.entity.Entity
-           ld22.entity.mob.Mob
-           ld22.entity.player.Player
-           ld22.gfx.screen.Screen
-           ld22.level.tile.grass.Grass))
+           funcraft.entity.entity.Entity
+           funcraft.entity.mob.Mob
+           funcraft.level.tile.grass.Grass))
 
-(def ^:const game-name "Minicraft")
+(def ^:const game-name "Funcraft")
 (def ^:const height 200)
 (def ^:const width (int (/ (* height 16) 9)))
 (def ^:const nanos-per-tick (long (/ 1e9 60)))
@@ -31,7 +31,7 @@
 (def ^Screen screen (screen/new width height sprite-sheet))
 (def ^"[I" colors (int-array (colors/init)))
 
-;; Not using a macro here preserves type hints
+;; Not using the .. macro here preserves type hints
 (def ^"[I" pixels (.getData ^java.awt.image.DataBufferInt
                             (.getDataBuffer (.getRaster image))))
 (def running (atom true))

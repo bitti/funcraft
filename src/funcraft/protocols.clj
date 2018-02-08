@@ -1,4 +1,4 @@
-(ns ld22.protocols)
+(ns funcraft.protocols)
 
 (defprotocol Renderable
   (render [this screen]))

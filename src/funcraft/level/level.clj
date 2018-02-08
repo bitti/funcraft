@@ -1,10 +1,9 @@
-(ns ld22.level.level
-  (:require [ld22.level.macros :refer [>>]]
-            [ld22.gfx.screen]
-            [ld22.protocols :refer [Tickable]]
-            )
-  (:import java.io.Writer
-           ld22.gfx.screen.Screen))
+(ns funcraft.level.level
+  (:require funcraft.gfx.screen
+            [funcraft.level.macros :refer [>>]]
+            [funcraft.protocols :refer [Tickable]])
+  (:import funcraft.gfx.screen.Screen
+           java.io.Writer))
 
 (def ticks (atom 0))
 
