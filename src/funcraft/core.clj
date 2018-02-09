@@ -5,4 +5,4 @@
 (defn -main
   "Start a game"
   [& args]
-  (def a (start)))
+  (start))

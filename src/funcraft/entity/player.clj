@@ -25,7 +25,7 @@
           xa (if @input-handler/left (dec xa) xa)
           ]
 ;      (if @input-handler/attack)
-      (update this :mob move xa ya)))
+      (update this :mob move (:level entities)  xa ya)))
 
   LevelRenderable
   (render [this screen level]

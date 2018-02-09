@@ -7,7 +7,7 @@
   (tick [this entities]))
 
 (defprotocol Movable
-  (move [this xa ya]))
+  (move [this level xa ya]))
 
 (definterface MayPass)
 

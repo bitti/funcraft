@@ -18,6 +18,8 @@
            [javax.swing ImageIcon JOptionPane]
            funcraft.level.level.Level))
 
+(set! *unchecked-math* :warn-on-boxed)
+
 (def ^Random random (Random.))
 
 (def ^:const grass-color 141)
@@ -174,7 +176,7 @@
             (triangular-distribution y d))))
 
 (defn- sand-for-map [m]
-  (apply assoc m
+  (apply assoc! m
          (flatten
           (for [[xs ys] (take (int (/ (* w h) 2800)) (even-map-distribution))]
             (for [[x y] (take 10 (even-distribution xs ys 10))]
@@ -190,7 +192,7 @@
                 ))))))
 
 (defn- trees-for-map [m]
-  (apply assoc m
+  (apply assoc! m
          (flatten
           (for [[x y] (take (int (/ (* w h) 400)) (even-map-distribution))]
             (for [[^int xx ^int yy] (take 200 (pyramid-distribution x y 15))
@@ -200,9 +202,10 @@
               [i (Tree. xx yy)])))))
 
 (defn create-top-map []
-  (-> (base-top-map)
+  (-> (transient (base-top-map))
       sand-for-map
-      trees-for-map))
+      trees-for-map
+      persistent!))
 
 (defn inspect-map []
   (let [img (BufferedImage. w h BufferedImage/TYPE_INT_RGB)

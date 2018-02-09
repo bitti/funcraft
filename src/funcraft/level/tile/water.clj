@@ -5,9 +5,10 @@
             [funcraft.level.macros :refer [<< >>]]
             funcraft.level.tile.sand)
   (:import funcraft.level.tile.sand.ConnectsToSand
+           funcraft.protocols.MayPass
            java.util.Random))
 
-;(set! *unchecked-math* true)
+(set! *unchecked-math* true)
 
 (def ^:const col (colors/index 5 5 115 115))
 (def ^:const nanos-per-tick (long (/ 1e9 60)))
@@ -26,6 +27,7 @@
                   ^long transition-color1
                   ^long transition-color2]
   ConnectsToSand
+  MayPass
   MaySwim
 
   LevelRenderable
@@ -44,7 +46,7 @@
           y (<< y 4)
           ]
 
-      (.setSeed random (+ (long (* (int (/ ^int (* (+ @level/ticks (* (- (>> x) y) 4311)))
+      (.setSeed random (+ (long (* (int (/ (+ @level/ticks (* (- (>> x) y) 4311))
                                            10))
                                    54687121))
                           (* x 3271612)

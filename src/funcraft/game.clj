@@ -8,6 +8,7 @@
             [funcraft.level.level :as level]
             [funcraft.level.level-gen :as level-gen]
             [funcraft.level.macros :refer [<< >>]]
+            [funcraft.entity.entity]
             [funcraft.protocols :as protocols :refer [tick Tickable]])
   (:import funcraft.entity.player.Player
            funcraft.gfx.screen.Screen
@@ -24,9 +25,9 @@
 (def ^:const height 200)
 (def ^:const width (int (/ (* height 16) 9)))
 (def ^:const nanos-per-tick (long (/ 1e9 60)))
-(def ^:const scale 3)
+(def ^:const scale 4)
 
-(def ^BufferedImage image (new BufferedImage width height BufferedImage/TYPE_INT_RGB))
+(def ^BufferedImage image (BufferedImage. width height BufferedImage/TYPE_INT_RGB))
 (def sprite-sheet (sprite-sheet/new-sheet (ImageIO/read (resource "icons.png"))))
 (def ^Screen screen (screen/new width height sprite-sheet))
 (def ^"[I" colors (int-array (colors/init)))
@@ -96,7 +97,13 @@
 
 (def frame
   (delay (doto (new JFrame game-name)
-           (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
+           (.setDefaultCloseOperation
+            
+            ;; Misuse sytem property to detect if we got started in a REPL
+            (if (System/getProperty "funcraft.version")
+              JFrame/DISPOSE_ON_CLOSE
+              JFrame/EXIT_ON_CLOSE))
+           
            (.setVisible true)
            (.setSize (* scale width) (* scale height))
            (.setLayout (new BorderLayout))

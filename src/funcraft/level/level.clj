@@ -1,5 +1,6 @@
 (ns funcraft.level.level
   (:require funcraft.gfx.screen
+            clojure.pprint
             [funcraft.level.macros :refer [>>]]
             [funcraft.protocols :refer [Tickable]])
   (:import funcraft.gfx.screen.Screen
@@ -12,10 +13,15 @@
 
 (defrecord Level [^int w ^int h colors tiles]
   Tickable
-  (tick [this entities] (swap! ticks inc)))
+  (tick [this entities] (swap! ticks inc))
+  )
 
+;; Avoid spamming the REPL with long level outputs
 (defmethod print-method Level [level ^Writer w]
-  (.write w (str (:w level) "x" (:h level))))
+  (.write w (str "Level of size "(:w level) "x" (:h level))))
+
+(defmethod clojure.pprint/simple-dispatch Level [level]
+  (print level))
 
 (defn get-tile [^Level level ^long x ^long y]
   (if (and (< -1 x (:w level)) (< -1 y (:h level)))
