@@ -5,21 +5,21 @@
             [funcraft.gfx.input-handler :as input-handler]
             [funcraft.gfx.screen :as screen]
             [funcraft.gfx.sprite-sheet :as sprite-sheet]
+            [funcraft.gfx.text :as text]
             [funcraft.level.level :as level]
             [funcraft.level.level-gen :as level-gen]
             [funcraft.level.macros :refer [<< >>]]
-            [funcraft.entity.entity]
             [funcraft.protocols :as protocols :refer [tick Tickable]])
-  (:import funcraft.entity.player.Player
+  (:import funcraft.entity.entity.Entity
+           funcraft.entity.mob.Mob
+           funcraft.entity.player.Player
            funcraft.gfx.screen.Screen
+           funcraft.level.tile.grass.Grass
            java.awt.BorderLayout
            [java.awt.image BufferedImage BufferStrategy]
            java.util.Random
            javax.imageio.ImageIO
-           javax.swing.JFrame
-           funcraft.entity.entity.Entity
-           funcraft.entity.mob.Mob
-           funcraft.level.tile.grass.Grass))
+           javax.swing.JFrame))
 
 (def ^:const game-name "Funcraft")
 (def ^:const height 200)
@@ -36,7 +36,6 @@
 (def ^"[I" pixels (.getData ^java.awt.image.DataBufferInt
                             (.getDataBuffer (.getRaster image))))
 (def running (atom true))
-(def ^Random gr (Random.))
 
 (defrecord Game [state entities]
   Tickable
@@ -46,14 +45,13 @@
 
 (defn new-game []
   (let [level (level-gen/new-level)
-        [px py] (loop [x (.nextInt gr (:w level))
-                       y (.nextInt gr (:h level))]
-                  (if (instance? Grass (level/get-tile level x y))
-                    [(<< x 4) (<< y 4)]
-                    (recur
-                     (.nextInt gr (:w level))
-                     (.nextInt gr (:h level))
-                     )))]
+
+        ;; Player start position is a random grass tile
+        [px py] (some
+                 (fn [[x y]]
+                   (if (instance? Grass (level/get-tile level x y))
+                     [(<< x 4) (<< y 4)]))
+                 (level-gen/even-map-distribution))]
     (Game.
      {:lt (System/nanoTime) ; time since last tick/render
       :nt (System/nanoTime) ; time since last FPS report
@@ -76,8 +74,9 @@
                       :y-offset y)
         ]
     (level/render-background (:level entities) screen)
-    (level/render player screen (:level entities)))
-    
+    (level/render player screen (:level entities))
+    )
+
   (let [w (:w screen)
         screen-pixels ^ints (:pixels screen)]
     (dotimes [y (:h screen)]
@@ -140,12 +139,18 @@
                              :frames 0
                              :sleeptime 0)))
       :else
-      (do
-        (render @bs entities)
-        (assoc game
-               :state (assoc state :lt now :frames (inc frames))
-               :entities (tick game entities))
-        ))))
+      (assoc game
+             :state (assoc state
+                           :lt now
+                           :frames
+                           (if (> unprocessed (+ nanos-per-tick 4e6))
+                             ;; We drop a frame when we are 4ms late
+                             frames
+                             (do (render @bs entities)
+                                 (inc frames))
+                             ))
+             :entities (tick game entities))
+        )))
 
 (defn throw-error [a e]
   (throw e))

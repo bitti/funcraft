@@ -74,8 +74,8 @@
                      ]]
            (set-sample values (+ x half-step) (+ y half-step) e)))
 
-        ;; Then interpolate original values (a, b, e) and new
-        ;; midpoints (f, d, e) for missing mitpoints (here g, h) to
+        ;; Then interpolate original values (a, b, c) and new
+        ;; midpoints (f, d, e) for missing midpoints (here g, h) to
         ;; get a grid again for the next iteration (with half distance
         ;; between points)
         ;;
@@ -85,7 +85,7 @@
         ;; . . . . . . .
         ;; f .[g]. d .
         ;; . . . . .
-        ;;   . e .
+        ;;   . c .
         (doall
          (for [^int y (range 0 h step-size)
                ^int x (range 0 w step-size)
@@ -151,7 +151,8 @@
                                  (+ grass-color 111)
                                  dirt-color))))))))
 
-(defn- even-map-distribution []
+(defn even-map-distribution []
+  "Lazy seq of evenly distributed random map positions"
   (repeatedly #(vector (.nextInt random w) (.nextInt random h))))
 
 (defn- even-distribution
