@@ -17,7 +17,7 @@
 
 (defrecord Player [^Mob mob ^int stamina ^int attack-time]
   Tickable
-  (tick [this entities]
+  (tick [this level]
     (let [ya 0
           ya (if @input-handler/up (dec ya) ya)
           ya (if @input-handler/down (inc ya) ya)
@@ -26,7 +26,7 @@
           xa (if @input-handler/left (dec xa) xa)
           ]
       (-> this
-          (update :mob move (:level entities) xa ya)
+          (update :mob move level xa ya)
           (assoc :attack-time (if (pos? attack-time)
                                 (dec attack-time)
                                 (if @input-handler/attack 10 0))))))
@@ -53,7 +53,7 @@
       (if (mob/swimming? mob level)
 
         ;; Render waves
-        (let [water-color (if (zero? (bit-and ^int @level/ticks 8))
+        (let [water-color (if (zero? (bit-and ^int (:ticks level) 8))
                            water-color2
                            water-color1)
               yo (+ yo 3)

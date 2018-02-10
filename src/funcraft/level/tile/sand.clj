@@ -13,8 +13,7 @@
 
   LevelRenderable
   (render [this screen level]
-    (let [
-          sand-color (get-in level [:colors :sand-color])
+    (let [^int sand-color (get-in level [:colors :sand-color])
           col (colors/index* (+ sand-color 2) sand-color (- sand-color 110) (- sand-color 110))
           transition-color (colors/index* (- sand-color 110) sand-color (- sand-color 110)
                                           (get-in level [:colors :dirt-color]))

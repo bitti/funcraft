@@ -244,4 +244,7 @@
           {:dirt-color dirt-color
            :sand-color sand-color
            }
-          (create-top-map)))
+          0                             ; Initial ticks 0
+          (create-top-map)
+          []                            ; No entities yet
+          ))

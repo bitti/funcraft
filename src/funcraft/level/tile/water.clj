@@ -1,10 +1,11 @@
 (ns funcraft.level.tile.water
   (:require [funcraft.gfx.colors :as colors]
             [funcraft.gfx.screen :as screen]
+            [funcraft.level.tile.sand]
             [funcraft.level.level :as level :refer [LevelRenderable]]
-            [funcraft.level.macros :refer [<< >>]]
-            funcraft.level.tile.sand)
-  (:import funcraft.level.tile.sand.ConnectsToSand
+            [funcraft.level.macros :refer [<< >>]])
+  (:import funcraft.level.level.Level
+           funcraft.level.tile.sand.ConnectsToSand
            funcraft.protocols.MayPass
            java.util.Random))
 
@@ -46,7 +47,7 @@
           y (<< y 4)
           ]
 
-      (.setSeed random (+ (long (* (int (/ (+ @level/ticks (* (- (>> x) y) 4311))
+      (.setSeed random (+ (long (* (int (/ (+ (.ticks ^Level level) (* (- (>> x) y) 4311))
                                            10))
                                    54687121))
                           (* x 3271612)

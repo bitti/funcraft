@@ -4,7 +4,7 @@
   (render [this screen]))
 
 (defprotocol Tickable
-  (tick [this entities]))
+  (tick [this level]))
 
 (defprotocol Movable
   (move [this level xa ya]))

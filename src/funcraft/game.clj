@@ -37,11 +37,11 @@
                             (.getDataBuffer (.getRaster image))))
 (def running (atom true))
 
-(defrecord Game [state entities]
+(defrecord Game [state level]
   Tickable
-  (tick [this entities]
-    (protocols/tick (:level entities) entities)
-    (update entities :player tick entities)))
+  (tick [this level]
+    (level/tick level)
+    ))
 
 (defn new-game []
   (let [level (level-gen/new-level)
@@ -58,24 +58,22 @@
       :frames 0             ; Count of frames since last FPS report
       :sleeptime 0          ; idle time since last FPS report
       }
-     {:level level
-      :player (player/new-player px py)})))
+     (update level :entities conj (player/new-player px py))
+     )))
 
-(defn render [^BufferStrategy bs entities]
-  (let [player ^Player (:player entities)
+(defn render [^BufferStrategy bs level]
+  (let [^Player player (some #(if (instance? Player %) %) (:entities level))
         w (.w screen)
         h (.h screen)
-        x (- (int (get-in player [:mob :entity :x])) (>> (int w)))
+        x (- (int (get-in player [:mob :entity :x])) (>> w))
         x (min (max 0 x) (- (* 16 128) w))
-        y (- (int (.. ^Entity (. ^Mob (. ^Player player mob) entity) ^int y)) (>> (int h)))
+        y (- (int (.. ^Entity (. ^Mob (. ^Player player mob) entity) y)) (>> h))
         y (min (max 0 y) (- (* 16 128) h))
         screen (assoc screen
                       :x-offset x
                       :y-offset y)
         ]
-    (level/render-background (:level entities) screen)
-    (level/render player screen (:level entities))
-    )
+    (protocols/render level screen))
 
   (let [w (:w screen)
         screen-pixels ^ints (:pixels screen)]
@@ -118,7 +116,7 @@
                           ^int frames
                           ^long sleeptime
                           ] :as state} :state
-            entities :entities :as game}]
+                  level :level :as game}]
   (if @running (send *agent* run))
   (let [now (System/nanoTime)
         unprocessed (- now lt)]
@@ -146,10 +144,10 @@
                            (if (> unprocessed (+ nanos-per-tick 4e6))
                              ;; We drop a frame when we are 4ms late
                              frames
-                             (do (render @bs entities)
+                             (do (render @bs level)
                                  (inc frames))
                              ))
-             :entities (tick game entities))
+             :level (tick game level))
         )))
 
 (defn throw-error [a e]
