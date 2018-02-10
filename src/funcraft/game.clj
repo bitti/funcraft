@@ -48,7 +48,7 @@
 
         ;; Player start position is a random grass tile
         [px py] (some
-                 (fn [[x y]]
+                 (fn [[^int x ^int y]]
                    (if (instance? Grass (level/get-tile level x y))
                      [(<< x 4) (<< y 4)]))
                  (level-gen/even-map-distribution))]
@@ -89,7 +89,7 @@
           )
         )))
 
-  (doto (.getDrawGraphics  bs)
+  (doto (or (.getDrawGraphics bs) (.createBufferStrategy 3))
     (.drawImage image 0 0 (* scale width) (* scale height) nil)
     (.dispose))
   (.show bs))
