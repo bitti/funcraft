@@ -5,8 +5,10 @@
             [funcraft.gfx.screen :as screen]
             [funcraft.level.level :as level :refer [LevelRenderable]]
             [funcraft.level.macros :refer [>>]]
+            [funcraft.level.tile.tree :as tree :refer [Hurtable]]
             [funcraft.protocols :refer [move Tickable]])
-  (:import funcraft.entity.mob.Mob))
+  (:import funcraft.entity.mob.Mob
+           java.util.Random))
 
 (set! *unchecked-math* :warn-on-boxed)
 
@@ -14,6 +16,9 @@
 (def ^:const water-color1 (colors/index -1 -1 115 335))
 (def ^:const water-color2 (colors/index -1 -1 115 115))
 (def ^:const bow-color (colors/index -1 555 555 555))
+(def ^Random random (Random.))
+
+(declare attack)
 
 (defrecord Player [^Mob mob ^int stamina ^int attack-time]
   Tickable
@@ -24,12 +29,21 @@
           xa 0
           xa (if @input-handler/right (inc xa) xa)
           xa (if @input-handler/left (dec xa) xa)
+
+          entities (disj (:entities level) this)
+          this (update this :mob move level xa ya)
+          this (assoc this
+                      :attack-time
+                      (if (pos? attack-time)
+                        (dec attack-time)
+                        (if @input-handler/attack 10 0)))
+          level (assoc level
+                       :entities (conj entities this))
+
           ]
-      (-> this
-          (update :mob move level xa ya)
-          (assoc :attack-time (if (pos? attack-time)
-                                (dec attack-time)
-                                (if @input-handler/attack 10 0))))))
+      (if (= attack-time 10)
+        (attack this level)
+        level)))
 
   LevelRenderable
   (render [this screen level]
@@ -100,7 +114,30 @@
                 ]
             (screen/render screen xo yo tile bow-color flip))))
 
-      )))
+      ))
+  )
+
+(defn attack [^Player player level]
+  (let [{^int x :x ^int y :y} (.. player mob entity)
+        r 20 ; Attack range
+        yo 2 ; vertical offset
+
+        [^int x ^int y]
+        (case (.. player mob dir)
+          0 [x (+ y r yo)]
+          1 [x (+ (- y r) yo)]
+          2 [(- x r) y]
+          3 [(+ x r) y]
+          )
+        xt (>> x 4)
+        yt (>> y 4)
+
+        tile (level/get-tile level xt yt)
+        ]
+    (if (satisfies? Hurtable tile)
+      (tree/hurt tile level (inc (.nextInt random 3)))
+      level)
+    ))
 
 (defn new-player [x y]
   (->Player (mob/new x y) 10 0))

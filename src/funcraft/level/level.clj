@@ -1,20 +1,18 @@
 (ns funcraft.level.level
   (:require clojure.pprint
-            [funcraft.level.macros :refer [>>]]
             [funcraft.gfx.screen]
-            [funcraft.protocols :as protocols :refer [Renderable Tickable]])
+            [funcraft.level.macros :refer [>>]]
+            [funcraft.protocols :as protocols :refer [Renderable]])
   (:import funcraft.gfx.screen.Screen
            java.io.Writer))
 
 (defprotocol LevelRenderable
-  (render [this ^Screen screen ^Level level]))
+  (render [this screen level]))
 
 (defn tick [level]
-  (-> level
-      (update :ticks inc)
-      (assoc :entities
-             (for [entity (:entities level)]
-               (protocols/tick entity level)))))
+  (reduce (fn [level entity] (protocols/tick entity level))
+          (update level :ticks inc)
+          (:entities level)))
 
 (declare get-tile)
 
@@ -44,6 +42,9 @@
   (if (and (< -1 x (:w level)) (< -1 y (:h level)))
     ((.tiles level) (+ x (* y (.w level))))
     nil))
+
+(defn set-tile [^Level level tile]
+  (assoc (.tiles level) (+ (.x tile) (* (.y tile) (.w level))) tile))
 
 ;; Avoid spamming the REPL with long level outputs
 (defmethod print-method Level [level ^Writer w]

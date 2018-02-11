@@ -22,7 +22,6 @@
 
 (def ^Random random (Random.))
 
-(def ^:const grass-color 141)
 (def ^:const dirt-color 322)
 (def ^:const sand-color 550)
 (def ^:const w 128)
@@ -140,16 +139,12 @@
                  dist (Math/pow dist 16)
                  val (+ val 1 (* dist -20))
                  ]]
-       (if (< val -0.5)
-         (Water. x y
-                 (colors/index 3 5 (- dirt-color 111) dirt-color)
-                 (colors/index 3 5 (- sand-color 110) sand-color))
-         (if (and (> val 0.5) (< mval -1.5))
-           (Rock. x y)
-           (Grass. x y
-                   (colors/index (- grass-color 111) grass-color
-                                 (+ grass-color 111)
-                                 dirt-color))))))))
+       (cond
+         (< val -0.5) (Water. x y
+                              (colors/index 3 5 (- dirt-color 111) dirt-color)
+                              (colors/index 3 5 (- sand-color 110) sand-color))
+         (and (> val 0.5) (< mval -1.5)) (Rock. x y)
+         :else (Grass. x y))))))
 
 (defn even-map-distribution []
   "Lazy seq of evenly distributed random map positions"
@@ -200,7 +195,7 @@
                   :let [i (+ xx (* yy w))]
                   :when (and (< -1 xx w) (< -1 yy h)
                              (instance? Grass (m i)))]
-              [i (Tree. xx yy)])))))
+              [i (Tree. xx yy 0)])))))
 
 (defn create-top-map []
   (-> (transient (base-top-map))
@@ -246,5 +241,5 @@
            }
           0                             ; Initial ticks 0
           (create-top-map)
-          []                            ; No entities yet
+          #{}                           ; No entities yet
           ))

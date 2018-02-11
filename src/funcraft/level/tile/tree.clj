@@ -1,16 +1,25 @@
 (ns funcraft.level.tile.tree
-  (:require [funcraft.gfx.colors :as colors]
+  (:require [funcraft.entity.item-entity :as item-entity]
+            [funcraft.gfx.colors :as colors]
             [funcraft.gfx.screen :as screen]
+            [funcraft.item.item :refer [->Item]]
             [funcraft.level.level :as level :refer [LevelRenderable]]
             [funcraft.level.macros :refer [<<]]
-            [funcraft.level.tile.grass :refer [grass-color]])
-  (:import funcraft.level.tile.grass.ConnectsToGrass))
+            [funcraft.level.tile.grass :refer [->Grass grass-color]])
+  (:import funcraft.level.tile.grass.ConnectsToGrass
+           java.util.Random))
 
-(def col (colors/index 10 30 151 grass-color))
-(def bark-col1 (colors/index 10 30 430 grass-color)) ; Light bark color
-(def bark-col2 (colors/index 10 30 320 grass-color)) ; Dark bark color
+(def ^:const col (colors/index 10 30 151 grass-color))
+(def ^:const bark-col1 (colors/index 10 30 430 grass-color)) ; Light bark color
+(def ^:const bark-col2 (colors/index 10 30 320 grass-color)) ; Dark bark color
+(def random (Random.))
 
-(defrecord Tree [^int x ^int y]
+(def ^:const apple-resource (->Item (+ 9 128) (colors/index -1 100 300 500)))
+
+(defprotocol Hurtable
+  (hurt [this level damage]))
+
+(defrecord Tree [^int x ^int y ^int damage]
   ConnectsToGrass
 
   LevelRenderable
@@ -41,3 +50,26 @@
         (screen/render screen (+ x 8) (+ y 8) (+ 10 (* 1 32)) col)
         (screen/render screen (+ x 8) (+ y 8) (+ 10 (* 3 32)) bark-col2)))
     ))
+
+(extend-type Tree
+  Hurtable
+  (hurt [this level damage]
+    (let [{:keys [x y]} this
+          damage (+ damage (:damage this))
+          tiles (if (>= damage 20)
+                  (level/set-tile level (->Grass x y))
+                  (level/set-tile level (assoc this :damage damage)))
+          entities (:entities level)
+          ]
+      (assoc level
+             :tiles tiles
+             :entities
+             (if (zero? (.nextInt random 10))
+               (conj entities
+                     (item-entity/new
+                      apple-resource
+                      (+ (<< x 4) (.nextInt random 10) 3)
+                      (+ (<< y 4) (.nextInt random 10) 3)))
+               entities
+               ))))
+  )

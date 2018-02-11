@@ -3,17 +3,20 @@
             [funcraft.gfx.screen :as screen]
             [funcraft.level.level :as level :refer [LevelRenderable]]
             [funcraft.level.macros :refer [<<]])
-  (:import funcraft.protocols.MayPass))
+  (:import funcraft.level.level.Level
+           funcraft.protocols.MayPass))
 
 (def ^:const grass-color 141)
 (def ^:const col (colors/index grass-color
                                grass-color
                                (+ grass-color 111)
                                (+ grass-color 111)))
+(def transition-color
+  (partial colors/index* (- grass-color 111) grass-color (+ grass-color 111)))
 
 (definterface ConnectsToGrass)
 
-(defrecord Grass [^int x ^int y ^long transition-color]
+(defrecord Grass [^int x ^int y]
   ConnectsToGrass
   MayPass
 
@@ -24,6 +27,8 @@
           r  (instance? ConnectsToGrass (level/get-tile level (inc x) y))
           d  (instance? ConnectsToGrass (level/get-tile level x (inc y)))
 
+          transition-color (transition-color (get-in level [:colors :dirt-color]))
+          
           ;; Tile has map coordinates which need to be transformed
           ;; to screen coordinates
           x (<< x 4)

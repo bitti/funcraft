@@ -87,7 +87,7 @@
           )
         )))
 
-  (doto (or (.getDrawGraphics bs) (.createBufferStrategy 3))
+  (doto (.getDrawGraphics (or bs (.createBufferStrategy 3)))
     (.drawImage image 0 0 (* scale width) (* scale height) nil)
     (.dispose))
   (.show bs))

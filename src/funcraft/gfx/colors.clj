@@ -48,4 +48,5 @@
   Since a color index needs one byte this macro returns an int for all
   4 colors"
   [a b c d]
-  (apply index* (map eval [a b c d])))
+  (unchecked-int
+   (apply index* (map eval [a b c d]))))
