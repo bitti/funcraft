@@ -1,5 +1,6 @@
 (ns funcraft.level.tile.tree
   (:require [funcraft.entity.item-entity :as item-entity]
+            [funcraft.entity.particle.smash :as particle.smash]
             [funcraft.gfx.colors :as colors]
             [funcraft.gfx.screen :as screen]
             [funcraft.item.item :refer [->Item]]
@@ -60,16 +61,18 @@
                   (level/set-tile level (->Grass x y))
                   (level/set-tile level (assoc this :damage damage)))
           entities (:entities level)
+          entities (if (zero? (.nextInt random 10))
+                     (conj entities
+                           (item-entity/new
+                            apple-resource
+                            (+ (<< x 4) (.nextInt random 10) 3)
+                            (+ (<< y 4) (.nextInt random 10) 3)))
+                     entities)
           ]
       (assoc level
              :tiles tiles
              :entities
-             (if (zero? (.nextInt random 10))
-               (conj entities
-                     (item-entity/new
-                      apple-resource
-                      (+ (<< x 4) (.nextInt random 10) 3)
-                      (+ (<< y 4) (.nextInt random 10) 3)))
-               entities
-               ))))
+             (conj entities
+                   (particle.smash/new (+ (<< x 4) 8) (+ (<< y 4) 8)))
+             )))
   )

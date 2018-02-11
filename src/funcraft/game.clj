@@ -37,6 +37,23 @@
                             (.getDataBuffer (.getRaster image))))
 (def running (atom true))
 
+(def frame
+  (delay (doto (new JFrame game-name)
+           (.setDefaultCloseOperation
+
+            ;; Misuse sytem property to detect if we got started in a REPL
+            (if (System/getProperty "funcraft.version")
+              JFrame/DISPOSE_ON_CLOSE
+              JFrame/EXIT_ON_CLOSE))
+
+           (.setVisible true)
+           (.setSize (* scale width) (* scale height))
+           (.setLayout (new BorderLayout))
+           (.createBufferStrategy 3)
+           (.setLocationRelativeTo nil)
+           (.addKeyListener input-handler/key-listener)
+           )))
+
 (defrecord Game [state level]
   Tickable
   (tick [this level]
@@ -87,27 +104,10 @@
           )
         )))
 
-  (doto (.getDrawGraphics (or bs (.createBufferStrategy 3)))
+  (doto (.getDrawGraphics (or bs (.createBufferStrategy @frame 3)))
     (.drawImage image 0 0 (* scale width) (* scale height) nil)
     (.dispose))
   (.show bs))
-
-(def frame
-  (delay (doto (new JFrame game-name)
-           (.setDefaultCloseOperation
-            
-            ;; Misuse sytem property to detect if we got started in a REPL
-            (if (System/getProperty "funcraft.version")
-              JFrame/DISPOSE_ON_CLOSE
-              JFrame/EXIT_ON_CLOSE))
-           
-           (.setVisible true)
-           (.setSize (* scale width) (* scale height))
-           (.setLayout (new BorderLayout))
-           (.createBufferStrategy 3)
-           (.setLocationRelativeTo nil)
-           (.addKeyListener input-handler/key-listener)
-           )))
 
 (def bs (delay ^BufferStrategy (.getBufferStrategy ^JFrame @frame)))
 

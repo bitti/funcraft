@@ -115,6 +115,23 @@
             (screen/render screen xo yo tile bow-color flip))))
 
       ))
+
+  Comparable
+  (compareTo [this other]
+    ;; We need to take care that we don't compare equally to other
+    ;; elements, otherwise one will be eleminated from the set!
+    (if (identical? this other)
+      0
+      (case (.compareTo ^Comparable other (get-in this [:mob :entity :y]))
+        -1  1
+
+        ;; But we also need to take care to don't compare to different
+        ;; entities as equal
+        0 (if (satisfies? LevelRenderable other)
+            (.compareTo (System/identityHashCode this) (System/identityHashCode other))
+            0)
+         1 -1
+        )))
   )
 
 (defn attack [^Player player level]

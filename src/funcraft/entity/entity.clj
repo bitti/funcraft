@@ -43,8 +43,14 @@
            :y (+ ^int
                  (if (and (not= ya 0)
                           (move* this level 0 ya))
-                   ya 0) y))
-    ))
+                   ya 0) y)))
+
+  Comparable
+  (compareTo [this other]
+    (if (identical? this other)
+      0
+      (- (.compareTo other y))))
+  )
 
 (defn intersects [^Entity e x0 y0 x1 y1]
   (not (or

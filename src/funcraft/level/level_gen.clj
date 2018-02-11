@@ -241,5 +241,5 @@
            }
           0                             ; Initial ticks 0
           (create-top-map)
-          #{}                           ; No entities yet
+          (sorted-set)                  ; No entities yet
           ))
