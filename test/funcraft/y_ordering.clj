@@ -20,12 +20,14 @@
             10)
         s1 (particle.smash/new 43 10)
         s2 (particle.smash/new 43 10)
+        t1 (particle.text-particle/new "4" 43 10 0)
+        t2 (particle.text-particle/new "4" 43 10 0)
         ]
 
     (testing "Reflexivity and antisymmetry"
       (doall
-       (for [e1 [p1 p2 i1 i2 s1 s2]
-             e2 [p1 p2 i1 i2 s1 s2]
+       (for [e1 [p1 p2 i1 i2 s1 s2 t1 t2]
+             e2 [p1 p2 i1 i2 s1 s2 t1 t2]
              ]
          (when-not
              (if (identical? e1 e2)
@@ -38,9 +40,9 @@
 
     (testing "Transitivity"
       (doall
-       (for [e1 [p1 p2 i1 i2 s1 s2]
-             e2 [p1 p2 i1 i2 s1 s2]
-             e3 [p1 p2 i1 i2 s1 s2]
+       (for [e1 [p1 p2 i1 i2 s1 s2 t1 t2]
+             e2 [p1 p2 i1 i2 s1 s2 t1 t2]
+             e3 [p1 p2 i1 i2 s1 s2 t1 t2]
              :when (and (not= e1 e2)
                         (not= e2 e3)
                         (not= e1 e3))

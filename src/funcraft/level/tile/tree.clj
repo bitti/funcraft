@@ -1,6 +1,7 @@
 (ns funcraft.level.tile.tree
   (:require [funcraft.entity.item-entity :as item-entity]
             [funcraft.entity.particle.smash :as particle.smash]
+            [funcraft.entity.particle.text-particle :as particle.text-particle]
             [funcraft.gfx.colors :as colors]
             [funcraft.gfx.screen :as screen]
             [funcraft.item.item :refer [->Item]]
@@ -56,10 +57,10 @@
   Hurtable
   (hurt [this level damage]
     (let [{:keys [x y]} this
-          damage (+ damage (:damage this))
-          tiles (if (>= damage 20)
+          total-damage (+ damage (:damage this))
+          tiles (if (>= total-damage 20)
                   (level/set-tile level (->Grass x y))
-                  (level/set-tile level (assoc this :damage damage)))
+                  (level/set-tile level (assoc this :damage total-damage)))
           entities (:entities level)
           entities (if (zero? (.nextInt random 10))
                      (conj entities
@@ -73,6 +74,11 @@
              :tiles tiles
              :entities
              (conj entities
-                   (particle.smash/new (+ (<< x 4) 8) (+ (<< y 4) 8)))
+                   (particle.smash/new (+ (<< x 4) 8) (+ (<< y 4) 8))
+                   (particle.text-particle/new
+                    (str damage)
+                    (+ (<< x 4) 8) (+ (<< y 4) 8)
+                    (colors/index -1 500 500 500))
+                   )
              )))
   )
