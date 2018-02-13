@@ -37,9 +37,11 @@
                       (if (pos? attack-time)
                         (dec attack-time)
                         (if @input-handler/attack 10 0)))
+          this (if (= attack-time 10)
+                 (update-in this [:mob :walk-dist] #(+ 8 %))
+                 this)
           level (assoc level
                        :entities (conj entities this))
-
           ]
       (if (= attack-time 10)
         (attack this level)
@@ -136,7 +138,7 @@
 
 (defn attack [^Player player level]
   (let [{^int x :x ^int y :y} (.. player mob entity)
-        r 20 ; Attack range
+        r 12 ; Attack range
         yo 2 ; vertical offset
 
         [^int x ^int y]

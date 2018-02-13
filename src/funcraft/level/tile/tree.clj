@@ -14,9 +14,12 @@
 (def ^:const col (colors/index 10 30 151 grass-color))
 (def ^:const bark-col1 (colors/index 10 30 430 grass-color)) ; Light bark color
 (def ^:const bark-col2 (colors/index 10 30 320 grass-color)) ; Dark bark color
-(def random (Random.))
 
+(def ^:const wood-resource (->Item (+ 1 128) (colors/index -1 200 531 430)))
+(def ^:const acorn-resource (->Item (+ 3 128) (colors/index -1 100 531 320)))
 (def ^:const apple-resource (->Item (+ 9 128) (colors/index -1 100 300 500)))
+
+(def random (Random.))
 
 (defprotocol Hurtable
   (hurt [this level damage]))
@@ -53,6 +56,12 @@
         (screen/render screen (+ x 8) (+ y 8) (+ 10 (* 3 32)) bark-col2)))
     ))
 
+(defn create-resource [resource x y]
+  (item-entity/new
+   resource
+   (+ (<< x 4) (.nextInt random 10) 3)
+   (+ (<< y 4) (.nextInt random 10) 3)))
+
 (extend-type Tree
   Hurtable
   (hurt [this level damage]
@@ -63,11 +72,29 @@
                   (level/set-tile level (assoc this :damage total-damage)))
           entities (:entities level)
           entities (if (zero? (.nextInt random 10))
-                     (conj entities
-                           (item-entity/new
-                            apple-resource
-                            (+ (<< x 4) (.nextInt random 10) 3)
-                            (+ (<< y 4) (.nextInt random 10) 3)))
+                     (conj entities (create-resource apple-resource x y))
+                     entities)
+          entities (if (>= total-damage 20)
+                     (into entities
+                           (into
+                            (repeatedly
+                             (inc (.nextInt random 2))
+                             #(create-resource wood-resource x y))
+                            (repeatedly
+                             ;; Seems this nesting of two random ints
+                             ;; leads to these probabilities for the
+                             ;; number of acorns:
+                             ;;
+                             ;; 0 25/48
+                             ;; 1 13/48
+                             ;; 2 7/48
+                             ;; 3 1/16
+                             ;;
+                             ;; So the expected count is 3/4 acorns
+                             ;; per tree
+                             (.nextInt random (inc (.nextInt random 4)))
+                             #(create-resource acorn-resource x y))
+                            ))
                      entities)
           ]
       (assoc level
