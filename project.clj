@@ -1,4 +1,4 @@
-(defproject funcraft "0.1.0-SNAPSHOT"
+(defproject funcraft "0.2.0"
   :description "Funcraft - a port of Notch's famous Minicraft into Clojure"
   :url "https://github.com/bitti/funcraft"
   :license {:name "GNU General Public License Version 3"
