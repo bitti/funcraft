@@ -4,7 +4,7 @@
 
 (defrecord Dimension [^int xr ^int yr])
 
-(defrecord Direction [^int dir])
+(defrecord Direction [^int direction])
 
 (defrecord Health [^int health])
 

@@ -1,11 +1,9 @@
 (ns funcraft.engines
-  (:require [funcraft.entity.mob :as mob]
-            [funcraft.gfx.colors :as colors]
-            [funcraft.gfx.input-handler :as input-handler]
-            [funcraft.gfx.screen :as screen]
-            [funcraft.level.macros :refer [>>]])
-  (:import [funcraft.components Control Dimension Direction Position Sprite Walk Attack]
-           java.util.Random))
+  (:require [funcraft.protocols :as protocols]
+            [funcraft.components]
+            [funcraft.level.level])
+  (:import [funcraft.components Control Direction Position Sprite]
+           funcraft.level.level.Level))
 
 (defprotocol EngineProtocol
   (add-entity [this id components])
@@ -48,19 +46,46 @@
   (when (= msg :move)
     (when ((:ids engine) id)
       (let [component (get-in itc [id Position])]
+        #_       [:update [id Walk :distance] (inc (get-in itc [id Walk :distance]))]
+        #_       [:update [id Direction :direction]
+                  (cond
+                    (pos? ^int ya) 0 ; down
+                    (neg? ^int ya) 1 ; up
+                    (neg? ^int xa) 2 ; right
+                    (pos? ^int xa) 3 ; left
+                    :else dir)
+                  ]
         [:update [id Position] (merge-with + component {:x dx :y dy})]))))
 
 (def move-engine
   (->Engine #{Position Direction} #{} change-position-when-move))
 
+(defn render-by-sprite-fn [this itc [msg]]
+  (if (= msg :render)
+    (map (fn [id]
+           [:render id (get-in itc [id Sprite :render-fn])])
+         (:ids this))
+    ))
+
 (def render-sprite-engine
-  (->Engine #{Position Sprite} #{}
-            (fn [this itc [msg]]
-              (if (= msg :render)
-                (map (fn [components]
-                       [:render (partial (get-in components [Sprite :render-fn]) components)])
-                     (map itc (:ids this)))
-                ))))
+  (->Engine #{Position Sprite} #{} render-by-sprite-fn))
+
+(defn render-by-level-fn [this itc [msg]]
+  ;; Currently only one level is supported
+  (case msg
+    :tick
+    (let [id (first (:ids this))]
+      ;; Increase tick counter which is used for animations
+      [:update [id Level :ticks] (inc (get-in itc [id Level :ticks]))])
+
+    :render
+    (let [id (first (:ids this))]
+      [:render-level id (fn [screen]
+                          (protocols/render ^Level (get-in itc [id Level]) screen))])
+    nil))
+
+(def render-level-engine
+  (->Engine #{Level} #{} render-by-level-fn))
 
 (def control-engine
   (->Engine #{Control} #{}
@@ -83,4 +108,3 @@
      (map (fn [^Engine engine]
             (add-entity engine id components))
           engines)]))
-

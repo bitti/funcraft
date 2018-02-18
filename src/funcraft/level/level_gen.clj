@@ -241,5 +241,4 @@
            }
           0                             ; Initial ticks 0
           (create-top-map)
-          (sorted-set)                  ; No entities yet
           ))

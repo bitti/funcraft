@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             [funcraft.engine-manager :as sut]
             [funcraft.engines :as engines]
+            [funcraft.entity.player :as player]
             [funcraft.protocols :as protocols])
   (:import [funcraft.components Control Dimension Position]))
 
@@ -16,7 +17,6 @@
 (defn block-y-110
   [engine itc [msg id dx dy]]
   (assert (not (nil? msg)))
-  (println msg)
   (when (and (= msg :move) (get-in engine [:ids id]))
     (let [pos (get-in itc [id Position])]
       (if (> (+ dy (:y pos)) 110)
@@ -33,9 +33,9 @@
   (let [[itc engines] (engines/new-entity
                        {}
                        [engines/move-engine collision-engine control-engine]
-                       (engines/new-player 100 100))
+                       (player/new 100 100))
         player-id (first (keys itc))
-        engine-manager (sut/->EngineManager engines itc nil)]
+        engine-manager (sut/->EngineManager engines itc)]
 
     (testing "player and engine setup"
       (is (= (get-in itc [player-id Position])

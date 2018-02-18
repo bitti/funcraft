@@ -22,7 +22,7 @@
      colors
      ^long ticks
      tiles
-     entities]
+     ]
   Renderable
   (render [level screen]
     (let [xo (>> (.x-offset ^Screen screen) 4)
@@ -33,9 +33,6 @@
       (doall (for [x (range (max 0 xo) (min w (+ sw xo 1)))
                    y (range (max 0 yo) (min h (+ sh yo 1)))]
                (render (get-tile level x y) screen level)))
-      (doall
-       (for [entity entities]
-         (render entity screen level)))
       )))
 
 (defn get-tile [^Level level ^long x ^long y]

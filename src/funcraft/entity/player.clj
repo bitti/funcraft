@@ -21,13 +21,15 @@
 (def ^:const water-color1 (colors/index -1 -1 115 335))
 (def ^:const water-color2 (colors/index -1 -1 115 115))
 (def ^:const bow-color (colors/index -1 555 555 555))
+(def ^:const max-health 10)
+
 (def ^Random random (Random.))
 
 (declare player-render input-handler)
 
 (defn new [x y]
   [(->Position x y)
-   (->Health 10)
+   (->Health max-health)
    (->Direction 0)
    (->Dimension 4 3)
    (->Walk 0)
@@ -46,7 +48,7 @@
     (if-not (= ya xa 0)
       [:move id xa ya])))
 
-(defn player-render [{[{^int x :x ^int y :y} :as pos] Position
+(defn player-render [{{^int x :x ^int y :y :as pos} Position
                       {^int walk-dist :distance} Walk
                       {^int dir :direction} Direction
                       {^int attack-time :attack-time} Attack
@@ -67,7 +69,7 @@
                 (* 14 32))
         ]
 
-    (if (swimming?)
+    (if swimming?
 
       ;; Render waves
       (let [water-color (if (zero? (bit-and ^int (:ticks level) 8))

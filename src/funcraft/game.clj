@@ -1,23 +1,21 @@
 (ns funcraft.game
   (:require [clojure.java.io :refer [resource]]
+            [funcraft.engine-manager :as engine-manager]
+            [funcraft.engines :as engines]
             [funcraft.entity.player :as player]
             [funcraft.gfx.colors :as colors]
             [funcraft.gfx.input-handler :as input-handler]
             [funcraft.gfx.screen :as screen]
             [funcraft.gfx.sprite-sheet :as sprite-sheet]
-            [funcraft.gfx.text :as text]
             [funcraft.level.level :as level]
             [funcraft.level.level-gen :as level-gen]
             [funcraft.level.macros :refer [<< >>]]
             [funcraft.protocols :as protocols :refer [tick Tickable]])
-  (:import funcraft.entity.entity.Entity
-           funcraft.entity.mob.Mob
-           funcraft.entity.player.Player
+  (:import [funcraft.components Control Position]
            funcraft.gfx.screen.Screen
            funcraft.level.tile.grass.Grass
            java.awt.BorderLayout
            [java.awt.image BufferedImage BufferStrategy]
-           java.util.Random
            javax.imageio.ImageIO
            javax.swing.JFrame))
 
@@ -37,6 +35,14 @@
                             (.getDataBuffer (.getRaster image))))
 (def running (atom true))
 
+(def engine-manager
+  (engine-manager/new
+   [engines/render-sprite-engine
+    engines/render-level-engine
+    engines/control-engine
+    engines/move-engine
+    ]))
+
 (def frame
   (delay (doto (new JFrame game-name)
            (.setDefaultCloseOperation
@@ -54,7 +60,7 @@
            (.addKeyListener input-handler/key-listener)
            )))
 
-(defrecord Game [state level]
+(defrecord Game [state engine-manager]
   Tickable
   (tick [this level]
     (level/tick level)
@@ -68,29 +74,37 @@
                  (fn [[^int x ^int y]]
                    (if (instance? Grass (level/get-tile level x y))
                      [(<< x 4) (<< y 4)]))
-                 (level-gen/even-map-distribution))]
+                 (level-gen/even-map-distribution))
+        ]
     (Game.
      {:lt (System/nanoTime) ; time since last tick/render
       :nt (System/nanoTime) ; time since last FPS report
       :frames 0             ; Count of frames since last FPS report
       :sleeptime 0          ; idle time since last FPS report
       }
-     (update level :entities conj (player/new-player px py))
+     (-> engine-manager
+         (engine-manager/new-entity (player/new px py))
+         (engine-manager/new-entity [level])
+         )
      )))
 
-(defn render [^BufferStrategy bs level]
-  (let [^Player player (some #(if (instance? Player %) %) (:entities level))
+(defn render [^BufferStrategy bs engine-manager]
+  (let [{x :x y :y}
+        (some (fn [[id components]]
+                (and (components Control)
+                     (components Position)))
+              (:itc engine-manager))
         w (.w screen)
         h (.h screen)
-        x (- (int (get-in player [:mob :entity :x])) (>> w))
+        x (- x (>> w))
         x (min (max 0 x) (- (* 16 128) w))
-        y (- (int (.. ^Entity (. ^Mob (. ^Player player mob) entity) y)) (>> h))
+        y (- y (>> h))
         y (min (max 0 y) (- (* 16 128) h))
         screen (assoc screen
                       :x-offset x
                       :y-offset y)
         ]
-    (protocols/render level screen))
+    (protocols/render engine-manager screen))
 
   (let [w (:w screen)
         screen-pixels ^ints (:pixels screen)]
@@ -111,12 +125,13 @@
 
 (def bs (delay ^BufferStrategy (.getBufferStrategy ^JFrame @frame)))
 
-(defn run [^Game {{:keys [^long lt
-                          ^int nt
-                          ^int frames
-                          ^long sleeptime
-                          ] :as state} :state
-                  level :level :as game}]
+(defn run
+  [^Game {{:keys [^long lt
+                  ^int nt
+                  ^int frames
+                  ^long sleeptime
+                  ] :as state} :state
+          engine-manager :engine-manager :as game}]
   (if @running (send *agent* run))
   (let [now (System/nanoTime)
         unprocessed (- now lt)]
@@ -144,10 +159,13 @@
                            (if (> unprocessed (+ nanos-per-tick 4e6))
                              ;; We drop a frame when we are 4ms late
                              frames
-                             (do (render @bs level)
+                             (do (render @bs engine-manager)
                                  (inc frames))
                              ))
-             :level (tick game level))
+             :engine-manager
+             (assoc engine-manager
+                    :itc (tick engine-manager nil)
+                    ))
         )))
 
 (defn throw-error [a e]
