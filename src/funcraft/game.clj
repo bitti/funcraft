@@ -60,11 +60,7 @@
            (.addKeyListener input-handler/key-listener)
            )))
 
-(defrecord Game [state engine-manager]
-  Tickable
-  (tick [this level]
-    (level/tick level)
-    ))
+(defrecord Game [state engine-manager])
 
 (defn new-game []
   (let [level (level-gen/new-level)
@@ -164,7 +160,7 @@
                              ))
              :engine-manager
              (assoc engine-manager
-                    :itc (tick engine-manager nil)
+                    :itc (tick engine-manager)
                     ))
         )))
 

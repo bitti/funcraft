@@ -44,16 +44,16 @@
              (list [:move player-id 1 1]))))
 
     (testing "One tick moves one position"
-      (let [itc (protocols/tick engine-manager nil)]
+      (let [itc (protocols/tick engine-manager)]
         (is (= (get-in itc [player-id Position]) (Position. 101 101)))))
 
     (testing "10 ticks move 10 positions"
       (let [{itc :itc}
-            (last (take 11 (iterate #(assoc % :itc (protocols/tick % nil)) engine-manager)))]
+            (last (take 11 (iterate #(assoc % :itc (protocols/tick %)) engine-manager)))]
         (is (= (get-in itc [player-id Position]) (Position. 110 110)))))
 
     (testing "20 ticks move 20 positions in x but only 10 in y direction"
       (let [{itc :itc}
-            (last (take 21 (iterate #(assoc % :itc (protocols/tick % nil)) engine-manager)))]
+            (last (take 21 (iterate #(assoc % :itc (protocols/tick %)) engine-manager)))]
         (is (= (get-in itc [player-id Position]) (Position. 120 110)))))
     ))

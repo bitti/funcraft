@@ -10,7 +10,7 @@
 (defrecord EngineManager [engines itc]
   Tickable
   (tick
-    [this level]
+    [this]
     "Send a tick message to all engines. Return the updated entity id
     to component mapping"
     (loop [messages (send-message this [:tick])
