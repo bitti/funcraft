@@ -2,7 +2,7 @@
   (:require [funcraft.protocols :as protocols]
             [funcraft.components]
             [funcraft.level.level])
-  (:import [funcraft.components Control Direction Position Sprite]
+  (:import [funcraft.components Control Direction Position Sprite Walk]
            funcraft.level.level.Level))
 
 (defprotocol EngineProtocol
@@ -43,22 +43,31 @@
 
 (defn change-position-when-move
   [engine itc [msg id dx dy]]
-  (when (= msg :move)
-    (when ((:ids engine) id)
+  (if (= msg :move)
+    (if ((:ids engine) id)
       (let [component (get-in itc [id Position])]
-        #_       [:update [id Walk :distance] (inc (get-in itc [id Walk :distance]))]
-        #_       [:update [id Direction :direction]
-                  (cond
-                    (pos? ^int ya) 0 ; down
-                    (neg? ^int ya) 1 ; up
-                    (neg? ^int xa) 2 ; right
-                    (pos? ^int xa) 3 ; left
-                    :else dir)
-                  ]
         [:update [id Position] (merge-with + component {:x dx :y dy})]))))
 
 (def move-engine
   (->Engine #{Position Direction} #{} change-position-when-move))
+
+(defn change-walk-direction-and-distance-when-move
+  [engine itc [msg id dx dy]]
+  (if (= msg :move)
+    (if ((:ids engine) id)
+      (list [:update [id Walk :distance] (inc (get-in itc [id Walk :distance]))]
+            [:update [id Direction :direction]
+             (cond
+               (pos? ^int dy) 0 ; down
+               (neg? ^int dy) 1 ; up
+               (neg? ^int dx) 2 ; right
+               (pos? ^int dx) 3 ; left
+               )
+             ])
+        )))
+
+(def walk-animation-engine
+  (->Engine #{Direction Walk} #{} change-walk-direction-and-distance-when-move))
 
 (defn render-by-sprite-fn [this itc [msg]]
   (if (= msg :render)

@@ -9,11 +9,6 @@
 (defprotocol LevelRenderable
   (render [this screen level]))
 
-(defn tick [level]
-  (reduce (fn [level entity] (protocols/tick entity level))
-          (update level :ticks inc)
-          (:entities level)))
-
 (declare get-tile)
 
 (defrecord Level

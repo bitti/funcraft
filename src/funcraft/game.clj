@@ -41,6 +41,7 @@
     engines/render-level-engine
     engines/control-engine
     engines/move-engine
+    engines/walk-animation-engine
     ]))
 
 (def frame

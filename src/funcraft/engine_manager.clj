@@ -13,7 +13,7 @@
     [this]
     "Send a tick message to all engines. Return the updated entity id
     to component mapping"
-    (loop [messages (send-message this [:tick])
+    (loop [messages '([:tick])
            updates ()
            merges ()
            loops 0]
