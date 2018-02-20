@@ -6,7 +6,7 @@ imperative Java program in a functional way in Clojure.
 Markus Persson (alias Notch, known as the creator of Minecraft)
 created [Minicraft](https://en.wikipedia.org/wiki/Minicraft) in just
 48 hours for the 22nd [Ludum Dare](https://ldjam.com/about)
-Competition. Despite the short development time is a completely
+Competition. Despite the short development time it is a completely
 functional and high quality game. At the same time it is small enough
 to be ported or enhanced in a reasonable amount of time. Indeed lots
 of ports exists already (see the list below).

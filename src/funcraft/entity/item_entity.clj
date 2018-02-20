@@ -46,9 +46,9 @@
    item
    (->Entity x y 3 3)                ; Set position and radius 3
    x y 2
-   (* (.nextGaussian random) 0.3)    ; x acceleration
-   (* (.nextGaussian random) 0.2)    ; y acceleration
-   (inc (* (.nextFloat random) 0.7)) ; z acceleration
+   (* (.nextGaussian random) 0.3)    ; x velocity
+   (* (.nextGaussian random) 0.2)    ; y velocity
+   (inc (* (.nextFloat random) 0.7)) ; z velocity
    (+ 600 (.nextInt random 60))      ; lifetime in ticks
    ))
 
