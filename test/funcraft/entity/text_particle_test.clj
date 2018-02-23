@@ -4,7 +4,7 @@
             [funcraft.engines :as engines]
             [funcraft.entity.particle.text-particle :as sut]
             [funcraft.protocols :as protocols])
-  (:import [funcraft.components LifetimeLimit Velocity]))
+  (:import [funcraft.components LifetimeLimit Message Position Velocity]))
 
 (deftest particle-lifetime-and-movement
   (let [engines [engines/move-engine
@@ -34,3 +34,32 @@
         (is (nil? (itc id)))
         (is (every? #(nil? ((:ids %) id)) engines))
         ))))
+
+(def text-particle-creation-engine
+  (engines/->Engine #{} #{}
+                    (fn [this itc [msg]]
+                      (if (= msg :tick)
+                        [:add (sut/new "23" 10 20 134)]))))
+
+(deftest particle-creation
+  (let [engines [text-particle-creation-engine
+                 engines/move-engine
+                 sut/text-particle-engine
+                 sut/lifetime-limit-engine]
+        {itc :itc [control-engine & particle-engines] :engines}
+        (protocols/tick
+         (engine-manager/->EngineManager engines {}))
+        [particle-id particle] (first itc)
+        ]
+
+    (testing "particle in itc and corresponding components"
+      (is (not (nil? particle-id)))
+      (is (empty?
+           (disj (set (keys particle))
+                 Position
+                 LifetimeLimit
+                 Message
+                 Velocity)
+             ))
+      (is (every? #((:ids %) particle-id) particle-engines))
+      )))

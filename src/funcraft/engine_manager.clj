@@ -16,6 +16,7 @@
            updates ()
            merges ()
            removes ()
+           adds ()
            loops 0]
       (if (> loops 10)
         (throw (AssertionError. "too many message loops"))
@@ -26,6 +27,7 @@
                  new-updates :updates
                  new-merges :merges
                  new-removes :removes
+                 new-adds :adds
                  }
                 (group-by
                  (fn [message]
@@ -33,6 +35,7 @@
                      :update :updates
                      :merge :merges
                      :remove :removes
+                     :add :adds
                      :messages))
                  messages)
                 ]
@@ -40,6 +43,7 @@
                    (concat updates new-updates)
                    (concat merges new-merges)
                    (concat removes new-removes)
+                   (concat adds new-adds)
                    (inc loops)))
           (let [itc (reduce #(apply assoc-in %1 (rest %2))
                             itc
@@ -56,9 +60,12 @@
                              engines)
                 itc (apply dissoc itc remove-ids)
                 ]
-            (assoc this
-                   :engines engines
-                   :itc itc)
+
+            (reduce (fn [entity-manager [_ entity]] (new-entity this entity))
+                    (assoc this
+                           :engines engines
+                           :itc itc)
+                    adds)
             )))))
 
   Renderable
