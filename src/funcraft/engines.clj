@@ -49,7 +49,7 @@
         [:update [id Position] (merge-with + component {:x dx :y dy})]))))
 
 (def move-engine
-  (->Engine #{Position Direction} #{} change-position-when-move))
+  (->Engine #{Position} #{} change-position-when-move))
 
 (defn change-walk-direction-and-distance-when-move
   [engine itc [msg id dx dy]]

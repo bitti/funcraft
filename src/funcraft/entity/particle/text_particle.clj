@@ -1,56 +1,84 @@
 (ns funcraft.entity.particle.text-particle
-  (:require [funcraft.entity.item-entity :as item-entity]
+  (:require [funcraft.components :as components]
+            [funcraft.engines :as engines]
             [funcraft.gfx.colors :as colors]
             [funcraft.gfx.text :as text]
-            [funcraft.item.item :as item]
-            [funcraft.level.level :refer [LevelRenderable]]
-            [funcraft.level.macros :refer [<<]]
-            [funcraft.protocols :as protocols :refer [Tickable]])
-  (:import funcraft.entity.item_entity.ItemEntity))
-
-(defrecord TextParticle
-    [^ItemEntity item-entity
-     ^String message
-     ]
-
-  Tickable
-  (tick [this level]
-    (let [item-entity
-          (first (:entities
-                  (protocols/tick item-entity (assoc level :entities #{}))))
-          entities (disj (:entities level) this)]
-      (assoc level
-             :entities
-             (if item-entity
-               (conj entities (assoc this :item-entity item-entity))
-               entities))))
-
-  Comparable
-  (compareTo [this other]
-    (if (identical? this other)
-      0
-      (case (.compareTo ^Comparable other (get-in this [:item-entity :entity :y]))
-        -1  1
-        0 (if (satisfies? LevelRenderable other)
-            (.compareTo (System/identityHashCode this) (System/identityHashCode other))
-            0)
-        1 -1
-        ))
-    ))
+            [funcraft.level.macros :refer [<<]])
+  (:import [funcraft.components LifetimeLimit Message Position Velocity]))
 
 (defn new [msg x y col]
-  (->TextParticle (update (assoc (item-entity/new (item/->Item 0 col) x y)
-                                 :life-time 60)
-                          :za inc)
-                  msg))
+  [(components/->Position x y)
+   (components/->LifetimeLimit 60)
+   (components/->Message msg col)
+   (update (components/new-velocity x y) :zv inc)
+   ])
 
-(extend-type TextParticle
-  LevelRenderable
-  (render [this screen level]
-    (let [x (- (get-in this [:item-entity :entity :x]) (<< (count (:message this)) 2))
-          y (- (get-in this [:item-entity :entity :y]) (int (get-in this [:item-entity :zz])))
-          ]
-      (text/draw (:message this) screen (inc x) (inc y) (colors/index -1 0 0 0))
-      (text/draw (:message this) screen x y (get-in this [:item-entity :item :color])))
-    )
+(defn decrease-lifetime-on-tick
+  [this itc [msg]]
+  (if (= msg :tick)
+    (map #(let [lifetime-limit (get-in itc [% LifetimeLimit :lifetime])]
+            (if (zero? lifetime-limit)
+              [:remove %]
+              [:update [% LifetimeLimit :lifetime] (dec lifetime-limit)]))
+         (:ids this)
+         )))
+
+(def lifetime-limit-engine
+  (engines/->Engine
+   #{LifetimeLimit}
+   #{}
+   decrease-lifetime-on-tick))
+
+(defn- render-text-particle [this screen]
+  (let [message (get-in this [Message :message])
+        x (- (get-in this [Position :x]) (<< (count message) 2))
+        y (- (get-in this [Position :y]) (int (get-in this [Velocity :zz])))
+        ]
+    (text/draw message screen (inc x) (inc y) (colors/index -1 0 0 0))
+    (text/draw message screen x y (get-in this [Message :color])))
   )
+
+(defn message-handler [this itc [msg]]
+  (case msg
+    :tick
+    (reduce
+     (fn [messages id]
+       (let [{{:keys [xx yy zz xv yv zv] :as velocity} Velocity
+              {:keys [x y]} Position} (itc id)
+             xx (+ xv xx)
+             yy (+ yv yy)
+             zz (+ zv zz)
+             velocity (assoc velocity
+                             :xx xx
+                             :yy yy
+                             :zz zz
+                             :zv (- zv 0.15)  ; Gravity
+                             )
+             velocity (if (neg? zz) ; Touched ground? Then...
+                        (assoc velocity
+                               :zz 0
+                               :zv (* -0.5 zv) ; vertical reflection with 50% damping
+                               :xv (*  0.6 xv) ; 40% horizontal velocity damping
+                               :yv (*  0.6 yv))
+                        velocity)
+             ]
+         (conj messages
+               [:update [id Velocity] velocity]
+               [:move id (- (int xx) x) (- (int yy) y)])))
+     ()                         ; Start with an empty list of messages
+     (:ids this))
+
+    :render
+    (map #([:render % render-text-particle]) (:ids this))
+    nil)
+  )
+
+(def text-particle-engine
+  (engines/->Engine
+   #{Position
+     Message
+     Velocity}
+   #{}
+   message-handler
+   ))
+

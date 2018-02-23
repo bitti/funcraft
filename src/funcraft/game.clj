@@ -159,10 +159,7 @@
                              (do (render @bs engine-manager)
                                  (inc frames))
                              ))
-             :engine-manager
-             (assoc engine-manager
-                    :itc (tick engine-manager)
-                    ))
+             :engine-manager (tick engine-manager))
         )))
 
 (defn throw-error [a e]

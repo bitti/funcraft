@@ -5,17 +5,17 @@
            funcraft.level.level.Level
            java.lang.AssertionError))
 
-(declare send-message)
+(declare send-message new-entity)
 
 (defrecord EngineManager [engines itc]
   Tickable
   (tick
     [this]
-    "Send a tick message to all engines. Return the updated entity id
-    to component mapping"
+    "Send a tick message to all engines. Returns the updated engine manager"
     (loop [messages '([:tick])
            updates ()
            merges ()
+           removes ()
            loops 0]
       (if (> loops 10)
         (throw (AssertionError. "too many message loops"))
@@ -24,25 +24,41 @@
                                  (send-message this (first messages)))
                 {new-messages :messages
                  new-updates :updates
-                 new-merges :merges}
+                 new-merges :merges
+                 new-removes :removes
+                 }
                 (group-by
                  (fn [message]
                    (case (first message)
                      :update :updates
                      :merge :merges
+                     :remove :removes
                      :messages))
                  messages)
                 ]
             (recur (concat new-messages)
                    (concat updates new-updates)
                    (concat merges new-merges)
+                   (concat removes new-removes)
                    (inc loops)))
           (let [itc (reduce #(apply assoc-in %1 (rest %2))
                             itc
-                            updates)]
-            (reduce #(apply assoc-in %1 (rest %2))
-                    itc
-                    merges)
+                            updates)
+                itc (reduce #(apply assoc-in %1 (rest %2))
+                            itc
+                            merges)
+                remove-ids (map second removes)
+                engines (map (fn [engine]
+                               (reduce (fn [engine entity-id]
+                                         (engines/remove-entity engine entity-id))
+                                       engine
+                                       remove-ids))
+                             engines)
+                itc (apply dissoc itc remove-ids)
+                ]
+            (assoc this
+                   :engines engines
+                   :itc itc)
             )))))
 
   Renderable
@@ -88,7 +104,8 @@
          (if (seq? messages)
            (concat answer-messages messages)
            (conj answer-messages messages))
-         answer-messages)))
+         answer-messages))
+     )
    ()
    (:engines this)))
 
