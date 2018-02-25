@@ -1,13 +1,16 @@
 (ns funcraft.entity.player-test
   (:require [clojure.test :refer [deftest is testing]]
-            [funcraft.entity.player :as sut]
-            [funcraft.engines :as engines])
+            [funcraft.engine.control :as engine.control]
+            [funcraft.engine.move :as engine.move]
+            [funcraft.engine.sprite :as engine.sprite]
+            [funcraft.engines :as engines]
+            [funcraft.entity.player :as sut])
   (:import funcraft.components.Position))
 
 (deftest move-updates-player-position
-  (let [engines [engines/move-engine
-                 engines/control-engine
-                 engines/render-sprite-engine
+  (let [engines [(engine.move/new)
+                 (engine.control/new)
+                 (engine.sprite/new)
                  ]
         player (sut/new 100 100)
         [itc engines] (engines/new-entity {} engines player)

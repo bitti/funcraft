@@ -107,7 +107,6 @@
   (reduce
    (fn [answer-messages engine]
      (let [messages (engines/receive-msg engine (:itc this) message)]
-;       (println "messages" messages)
        (if (seq messages)
          (if (seq? messages)
            (concat answer-messages messages)

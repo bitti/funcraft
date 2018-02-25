@@ -3,6 +3,11 @@
             [funcraft.components :as components]
             [funcraft.engine-manager :as engine-manager]
             [funcraft.engine.collision :as engine.collision]
+            [funcraft.engine.control :as engine.control]
+            [funcraft.engine.level :as engine.level]
+            [funcraft.engine.move :as engine.move]
+            [funcraft.engine.walk-animation :as engine.walk-animation]
+            [funcraft.engine.sprite :as engine.sprite]
             [funcraft.engines :as engines]
             [funcraft.entity.player :as player]
             [funcraft.gfx.colors :as colors]
@@ -39,11 +44,11 @@
 
 (def engine-manager
   (engine-manager/new
-   [engines/render-sprite-engine
-    engines/render-level-engine
-    engines/control-engine
-    engines/move-engine
-    engines/walk-animation-engine
+   [(engine.sprite/new)
+    (engine.level/new)
+    (engine.control/new)
+    (engine.move/new)
+    (engine.walk-animation/new)
     (engine.collision/new)
     ]))
 
