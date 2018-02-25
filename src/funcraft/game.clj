@@ -1,6 +1,8 @@
 (ns funcraft.game
   (:require [clojure.java.io :refer [resource]]
+            [funcraft.components :as components]
             [funcraft.engine-manager :as engine-manager]
+            [funcraft.engine.collision :as engine.collision]
             [funcraft.engines :as engines]
             [funcraft.entity.player :as player]
             [funcraft.gfx.colors :as colors]
@@ -10,7 +12,7 @@
             [funcraft.level.level :as level]
             [funcraft.level.level-gen :as level-gen]
             [funcraft.level.macros :refer [<< >>]]
-            [funcraft.protocols :as protocols :refer [tick Tickable]])
+            [funcraft.protocols :as protocols :refer [tick]])
   (:import [funcraft.components Control Position]
            funcraft.gfx.screen.Screen
            funcraft.level.tile.grass.Grass
@@ -42,6 +44,7 @@
     engines/control-engine
     engines/move-engine
     engines/walk-animation-engine
+    (engine.collision/new)
     ]))
 
 (def frame
@@ -81,7 +84,10 @@
       }
      (-> engine-manager
          (engine-manager/new-entity (player/new px py))
-         (engine-manager/new-entity [level])
+         (engine-manager/new-entity
+          [level
+           (components/->Position 0 0)
+           (components/->Dimension (<< (:w level) 4) (<< (:h level) 4))])
          )
      )))
 
