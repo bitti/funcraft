@@ -1,14 +1,14 @@
 (ns funcraft.level.tile.tree
   (:require [funcraft.entity.item-entity :as item-entity]
-            [funcraft.entity.particle.smash :as particle.smash]
-            [funcraft.entity.particle.text-particle :as particle.text-particle]
+            [funcraft.entity.particle.text-particle :as text-particle]
             [funcraft.gfx.colors :as colors]
             [funcraft.gfx.screen :as screen]
             [funcraft.item.item :refer [->Item]]
             [funcraft.level.level :as level :refer [LevelRenderable]]
             [funcraft.level.macros :refer [<<]]
             [funcraft.level.tile.grass :refer [->Grass grass-color]])
-  (:import funcraft.level.tile.grass.ConnectsToGrass
+  (:import funcraft.level.level.Level
+           funcraft.level.tile.grass.ConnectsToGrass
            java.util.Random))
 
 (def ^:const col (colors/index 10 30 151 grass-color))
@@ -22,7 +22,7 @@
 (def random (Random.))
 
 (defprotocol Hurtable
-  (hurt [this level damage]))
+  (hurt [this level level-id damage]))
 
 (defrecord Tree [^int x ^int y ^int damage]
   ConnectsToGrass
@@ -64,48 +64,42 @@
 
 (extend-type Tree
   Hurtable
-  (hurt [this level damage]
-    (let [{:keys [x y]} this
-          total-damage (+ damage (:damage this))
-          tiles (if (>= total-damage 20)
-                  (level/set-tile level (->Grass x y))
-                  (level/set-tile level (assoc this :damage total-damage)))
-          entities (:entities level)
-          entities (if (zero? (.nextInt random 10))
-                     (conj entities (create-resource apple-resource x y))
-                     entities)
-          entities (if (>= total-damage 20)
-                     (into entities
-                           (into
-                            (repeatedly
-                             (inc (.nextInt random 2))
-                             #(create-resource wood-resource x y))
-                            (repeatedly
-                             ;; Seems this nesting of two random ints
-                             ;; leads to these probabilities for the
-                             ;; number of acorns:
-                             ;;
-                             ;; 0 25/48
-                             ;; 1 13/48
-                             ;; 2 7/48
-                             ;; 3 1/16
-                             ;;
-                             ;; So the expected count is 3/4 acorns
-                             ;; per tree
-                             (.nextInt random (inc (.nextInt random 4)))
-                             #(create-resource acorn-resource x y))
-                            ))
-                     entities)
+  (hurt [this level level-id new-damage]
+    (let [{:keys [x y damage]} this
+          total-damage (+ new-damage damage)
+          tile (if (>= total-damage 20)
+                 (->Grass x y)
+                 (assoc this :damage total-damage))
+#_          (if (zero? (.nextInt random 10))
+            (conj entities (create-resource apple-resource x y)))
+#_          (if (>= total-damage 20)
+            (into entities
+                  (into
+                   (repeatedly
+                    (inc (.nextInt random 2))
+                    #(create-resource wood-resource x y))
+                   (repeatedly
+                    ;; Seems this nesting of two random ints
+                    ;; leads to these probabilities for the
+                    ;; number of acorns:
+                    ;;
+                    ;; 0 25/48
+                    ;; 1 13/48
+                    ;; 2 7/48
+                    ;; 3 1/16
+                    ;;
+                    ;; So the expected count is 3/4 acorns
+                    ;; per tree
+                    (.nextInt random (inc (.nextInt random 4)))
+                    #(create-resource acorn-resource x y))
+                   ))
+            entities)
           ]
-      (assoc level
-             :tiles tiles
-             :entities
-             (conj entities
-                   (particle.smash/new (+ (<< x 4) 8) (+ (<< y 4) 8))
-                   (particle.text-particle/new
-                    (str damage)
-                    (+ (<< x 4) 8) (+ (<< y 4) 8)
-                    (colors/index -1 500 500 500))
-                   )
-             )))
+      (list
+       [:update [level-id Level :tiles (+ x (* y 128))] tile]
+       [:add
+        (text-particle/new
+         (str new-damage)
+         (+ (<< x 4) 8) (+ (<< y 4) 8)
+         (colors/index -1 500 500 500))])))
   )

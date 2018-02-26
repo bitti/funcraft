@@ -18,7 +18,7 @@
            removes ()
            adds ()
            loops 0]
-      (if (> loops 10)
+      (if (> loops 80)
         (throw (AssertionError. "too many message loops"))
         (if (seq messages)
           (let [messages (concat (rest messages)
@@ -61,7 +61,7 @@
                 itc (apply dissoc itc remove-ids)
                 ]
 
-            (reduce (fn [entity-manager [_ entity]] (new-entity this entity))
+            (reduce (fn [engine-manager [_ entity]] (new-entity engine-manager entity))
                     (assoc this
                            :engines engines
                            :itc itc)

@@ -2,13 +2,15 @@
   (:require [clojure.java.io :refer [resource]]
             [funcraft.components :as components]
             [funcraft.engine-manager :as engine-manager]
+            [funcraft.engine.attack :as engine.attack]
             [funcraft.engine.collision :as engine.collision]
             [funcraft.engine.control :as engine.control]
             [funcraft.engine.level :as engine.level]
+            [funcraft.engine.lifetime-limit :as engine.lifetime-limit]
             [funcraft.engine.move :as engine.move]
-            [funcraft.engine.walk-animation :as engine.walk-animation]
             [funcraft.engine.sprite :as engine.sprite]
-            [funcraft.engines :as engines]
+            [funcraft.engine.walk-animation :as engine.walk-animation]
+            [funcraft.entity.particle.text-particle :as text-particle]
             [funcraft.entity.player :as player]
             [funcraft.gfx.colors :as colors]
             [funcraft.gfx.input-handler :as input-handler]
@@ -50,6 +52,9 @@
     (engine.move/new)
     (engine.walk-animation/new)
     (engine.collision/new)
+    (engine.attack/new)
+    (engine.lifetime-limit/new)
+    text-particle/text-particle-engine
     ]))
 
 (def frame

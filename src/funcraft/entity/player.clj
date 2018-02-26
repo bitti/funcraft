@@ -35,7 +35,7 @@
    (->Walk 0)
    (->Sprite player-render)
    (->Control input-handler)
-   (->Attack 0)
+   (->Attack 0 12)
    ])
 
 (defn input-handler [id]
@@ -45,8 +45,16 @@
         xa 0
         xa (if @input-handler/right (inc xa) xa)
         xa (if @input-handler/left (dec xa) xa)]
-    (if-not (= ya xa 0)
-      [:move id xa ya])))
+    (concat
+     (if-not (= ya xa 0)
+       (list [:move id xa ya]))
+     (when @input-handler/attack
+
+       ;; Trigger only once per keypress
+       (reset! input-handler/attack false)
+
+       (list [:attack id])
+       ))))
 
 (defn player-render [{{^int x :x ^int y :y :as pos} Position
                       {^int walk-dist :distance} Walk
@@ -120,4 +128,3 @@
           (screen/render screen xo yo tile bow-color flip))))
 
     ))
-

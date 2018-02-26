@@ -4,7 +4,8 @@
 
 (defn detect-collision
   [engine itc [msg id dx dy]]
-  (if (= msg :move)
+  (if (and (= msg :move)
+           (get-in engine [:ids id]))
     (if-let [entity (itc id)]
       (let [{{:keys [x y]} Position {:keys [xr yr]} Dimension} entity
             x (+ x dx)

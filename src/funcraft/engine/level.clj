@@ -2,11 +2,15 @@
   (:require [funcraft.engines :refer [->Engine]]
             [funcraft.level.level :as level]
             [funcraft.level.macros :refer [>>]]
+            [funcraft.level.tile.tree :as tree :refer [Hurtable]]
             [funcraft.protocols :as protocols])
-  (:import [funcraft.components Dimension Position]
+  (:import [funcraft.components Attack Dimension Direction Position]
            funcraft.level.level.Level
            funcraft.level.tile.water.MaySwim
-           funcraft.protocols.MayPass))
+           funcraft.protocols.MayPass
+           java.util.Random))
+
+(def ^Random random (Random.))
 
 (defn can-move-in-dir? [level x y xr yr xa ya]
   (let [x0 (>> (- x xr) 4)
@@ -29,7 +33,7 @@
                   ]
               (level/get-tile level xt yt)))))
 
-(defn render-by-level-fn [this itc [msg & args]]
+(defn level-message-handler [this itc [msg & args]]
   ;; Currently only one level is supported
   (case msg
     :tick
@@ -49,11 +53,12 @@
           entity (itc entity-id)
           {{:keys [x y]} Position {:keys [xr yr]} Dimension} entity
           ]
-      (concat
+      (if xr
+        (concat
          (if-not (can-move-in-dir? level x y xr yr xa 0)
-           (list [:merge [entity-id Position :x] (get-in entity [Position :x])]))
+           (list [:merge [entity-id Position :x] x]))
          (if-not (can-move-in-dir? level x y xr yr 0 ya)
-           (list [:merge [entity-id Position :y] (get-in entity [Position :y])]))))
+           (list [:merge [entity-id Position :y] y])))))
 
     :collision
     (let [id (first (:ids this))
@@ -66,7 +71,29 @@
           (if (and (instance? MaySwim tile) (even? (get-in itc [id Level :ticks])))
             [:merge [entity-id Position] (get-in itc [entity-id Position])]
             ))))
+
+    :attack
+    (let [level-id (first (:ids this))
+          level (get-in itc [level-id Level])
+          [entity-id] args
+          {{x :x y :y} Position
+           {dir :direction} Direction
+           {r :range} Attack} (itc entity-id)
+          yo 2 ; vertical offset
+
+          [^int x ^int y]
+          (case dir
+            0 [x (+ y r yo)]
+            1 [x (+ (- y r) yo)]
+            2 [(- x r) y]
+            3 [(+ x r) y]
+            )
+          xt (>> x 4)
+          yt (>> y 4)
+          tile (level/get-tile level xt yt)]
+      (when (satisfies? Hurtable tile)
+        (tree/hurt tile level level-id (inc (.nextInt random 3)))))
     nil))
 
 (defn new []
-  (->Engine #{Level} #{} render-by-level-fn))
+  (->Engine #{Level} #{} level-message-handler))

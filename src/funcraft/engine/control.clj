@@ -6,7 +6,7 @@
   (->Engine #{Control} #{}
             (fn [this itc [msg]]
               (if (= msg :tick)
-                (map (fn [id]
-                       ((get-in (itc id) [Control :input-handler-fn]) id))
-                     (:ids this))
+                (mapcat (fn [id]
+                          ((get-in (itc id) [Control :input-handler-fn]) id))
+                        (:ids this))
                 ))))

@@ -1,6 +1,7 @@
 (ns funcraft.entity.text-particle-test
   (:require [clojure.test :refer [deftest is testing]]
             [funcraft.engine-manager :as engine-manager]
+            [funcraft.engine.lifetime-limit :as engine.lifetime-limit]
             [funcraft.engine.move :as engine.move]
             [funcraft.engines :as engines]
             [funcraft.entity.particle.text-particle :as sut]
@@ -10,7 +11,7 @@
 (deftest particle-lifetime-and-movement
   (let [engines [(engine.move/new)
                  sut/text-particle-engine
-                 sut/lifetime-limit-engine]
+                 (engine.lifetime-limit/new)]
         text-particle (sut/new "23" 10 20 134)
         [itc engines] (engines/new-entity {} engines text-particle)
         [id components] (first itc)
@@ -46,7 +47,7 @@
   (let [engines [text-particle-creation-engine
                  (engine.move/new)
                  sut/text-particle-engine
-                 sut/lifetime-limit-engine]
+                 (engine.lifetime-limit/new)]
         {itc :itc [control-engine & particle-engines] :engines}
         (protocols/tick
          (engine-manager/->EngineManager engines {}))

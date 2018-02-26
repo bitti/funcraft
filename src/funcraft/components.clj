@@ -15,7 +15,7 @@
 
 (defrecord Control [input-handler-fn])
 
-(defrecord Attack [^int attack-time])
+(defrecord Attack [^int attack-time ^int range])
 
 (defrecord LifetimeLimit [^int lifetime])
 

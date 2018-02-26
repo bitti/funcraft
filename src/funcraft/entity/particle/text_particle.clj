@@ -13,23 +13,7 @@
    (update (components/new-velocity x y) :zv inc)
    ])
 
-(defn decrease-lifetime-on-tick
-  [this itc [msg]]
-  (if (= msg :tick)
-    (map #(let [lifetime-limit (get-in itc [% LifetimeLimit :lifetime])]
-            (if (zero? lifetime-limit)
-              [:remove %]
-              [:update [% LifetimeLimit :lifetime] (dec lifetime-limit)]))
-         (:ids this)
-         )))
-
-(def lifetime-limit-engine
-  (engines/->Engine
-   #{LifetimeLimit}
-   #{}
-   decrease-lifetime-on-tick))
-
-(defn- render-text-particle [this screen]
+(defn render-text-particle [this screen _]
   (let [message (get-in this [Message :message])
         x (- (get-in this [Position :x]) (<< (count message) 2))
         y (- (get-in this [Position :y]) (int (get-in this [Velocity :zz])))
@@ -69,7 +53,8 @@
      (:ids this))
 
     :render
-    (map #([:render % render-text-particle]) (:ids this))
+    (map #(vector :render % render-text-particle) (:ids this))
+
     nil)
   )
 
@@ -81,4 +66,3 @@
    #{}
    message-handler
    ))
-
