@@ -1,22 +1,18 @@
 (ns funcraft.level.level-gen
   (:require [funcraft.gfx.colors :as colors]
-            [funcraft.level.macros :refer [<< >>]]
-            funcraft.level.tile.grass
-            funcraft.level.tile.rock
-            funcraft.level.tile.sand
-            funcraft.level.tile.tree
-            funcraft.level.tile.water)
-  (:import funcraft.level.tile.grass.Grass
+            [funcraft.level.macros :refer [<< >>]])
+  (:import funcraft.level.level.Level
+           funcraft.level.tile.grass.Grass
            funcraft.level.tile.rock.Rock
            funcraft.level.tile.sand.Sand
            funcraft.level.tile.tree.Tree
+           funcraft.level.tile.cactus.Cactus
            funcraft.level.tile.water.Water
            java.awt.Image
            java.awt.image.BufferedImage
            java.lang.Math
            java.util.Random
-           [javax.swing ImageIcon JOptionPane]
-           funcraft.level.level.Level))
+           [javax.swing ImageIcon JOptionPane]))
 
 (set! *unchecked-math* :warn-on-boxed)
 
@@ -197,10 +193,19 @@
                              (instance? Grass (m i)))]
               [i (Tree. xx yy 0)])))))
 
+(defn- cactuses-for-map [m]
+  (apply assoc! m
+         (flatten
+          (for [[^int x ^int y] (take (int (/ (* w h) 100)) (even-map-distribution))
+                :let [i (+ x (* y w))]
+                :when (instance? Sand (m i))]
+            [i (Cactus. x y 0)]))))
+
 (defn create-top-map []
   (-> (transient (base-top-map))
       sand-for-map
       trees-for-map
+      cactuses-for-map
       persistent!))
 
 (defn inspect-map []
