@@ -71,33 +71,28 @@
           tile (if (>= total-damage 20)
                  (->Grass x y)
                  (assoc this :damage total-damage))
-#_          (if (>= total-damage 20)
-            (into entities
-                  (into
-                   (repeatedly
-                    (inc (.nextInt random 2))
-                    #(create-resource wood-resource x y))
-                   (repeatedly
-                    ;; Seems this nesting of two random ints
-                    ;; leads to these probabilities for the
-                    ;; number of acorns:
-                    ;;
-                    ;; 0 25/48
-                    ;; 1 13/48
-                    ;; 2 7/48
-                    ;; 3 1/16
-                    ;;
-                    ;; So the expected count is 3/4 acorns
-                    ;; per tree
-                    (.nextInt random (inc (.nextInt random 4)))
-                    #(create-resource acorn-resource x y))
-                   ))
-            entities)
           ]
       (concat
        (if (zero? (.nextInt random 10))
-         (list [:add
-                (create-resource apple-resource x y)]))
+         (list [:add (create-resource apple-resource x y)]))
+       (if (>= total-damage 20)
+         (concat
+          (repeatedly (inc (.nextInt random 2))
+                      #(vector :add (create-resource wood-resource x y)))
+          (repeatedly
+           ;; Seems this nesting of two random ints
+           ;; leads to these probabilities for the
+           ;; number of acorns:
+           ;;
+           ;; 0 25/48
+           ;; 1 13/48
+           ;; 2 7/48
+           ;; 3 1/16
+           ;;
+           ;; So the expected count is 3/4 acorns
+           ;; per tree
+           (.nextInt random (inc (.nextInt random 4)))
+           #(vector :add (create-resource acorn-resource x y)))))
        (list
         [:update [level-id Level :tiles (+ x (* y 128))] tile]
         [:add
