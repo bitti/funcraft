@@ -1,5 +1,6 @@
 (ns funcraft.engines
-  (:require [funcraft.level.level :as level]
+  (:require [clojure.set :as set]
+            [funcraft.level.level :as level]
             [funcraft.level.macros :refer [>>]]
             [funcraft.level.tile.water]
             [funcraft.protocols :as protocols])
@@ -15,11 +16,10 @@
   )
 
 (defn eligible-entity? [engine components]
-  (not
-   (seq
-    (clojure.set/difference
-     (:component-types engine)
-     (set (map type components))))))
+  (empty?
+   (set/difference
+    (:component-types engine)
+    (set (map type components)))))
 
 (defrecord Engine [component-types ids receiver]
   EngineProtocol
