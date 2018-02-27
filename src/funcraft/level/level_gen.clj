@@ -143,7 +143,7 @@
          (< val -0.5) (Water. x y
                               (colors/index 3 5 (- dirt-color 111) dirt-color)
                               (colors/index 3 5 (- sand-color 110) sand-color))
-         (and (> val 0.5) (< mval -1.5)) (Rock. x y)
+         (and (> val 0.5) (< mval -1.5)) (Rock. x y 0)
          :else (Grass. x y))))))
 
 (defn even-map-distribution []
