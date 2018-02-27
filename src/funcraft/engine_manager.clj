@@ -18,11 +18,10 @@
            removes ()
            adds ()
            loops 0]
-      (if (> loops 80)
+      (if (> loops 10)
         (throw (AssertionError. "too many message loops"))
         (if (seq messages)
-          (let [messages (concat (rest messages)
-                                 (send-message this (first messages)))
+          (let [messages (mapcat #(send-message this %) messages)
                 {new-messages :messages
                  new-updates :updates
                  new-merges :merges

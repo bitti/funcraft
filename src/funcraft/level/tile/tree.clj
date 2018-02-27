@@ -1,6 +1,7 @@
 (ns funcraft.level.tile.tree
   (:require [funcraft.entity.item-entity :as item-entity]
-            [funcraft.entity.particle.text-particle :as text-particle]
+            [funcraft.entity.particle.smash :as particle.smash]
+            [funcraft.entity.particle.text-particle :as particle.text-particle]
             [funcraft.gfx.colors :as colors]
             [funcraft.gfx.screen :as screen]
             [funcraft.item.item :refer [->Item]]
@@ -23,6 +24,13 @@
 
 (defprotocol Hurtable
   (hurt [this level level-id damage]))
+
+(defn create-resource [resource x y]
+  (item-entity/new
+   (:sprite resource)
+   (:color resource)
+   (+ (<< x 4) (.nextInt random 10) 3)
+   (+ (<< y 4) (.nextInt random 10) 3)))
 
 (defrecord Tree [^int x ^int y ^int damage]
   ConnectsToGrass
@@ -54,21 +62,12 @@
       (if (and d dr r)
         (screen/render screen (+ x 8) (+ y 8) (+ 10 (* 1 32)) col)
         (screen/render screen (+ x 8) (+ y 8) (+ 10 (* 3 32)) bark-col2)))
-    ))
+    )
 
-(defn create-resource [resource x y]
-  (item-entity/new
-   (:sprite resource)
-   (:color resource)
-   (+ (<< x 4) (.nextInt random 10) 3)
-   (+ (<< y 4) (.nextInt random 10) 3)))
-
-(extend-type Tree
   Hurtable
   (hurt [this level level-id new-damage]
-    (let [{:keys [x y damage]} this
-          total-damage (+ new-damage damage)
-          tile (if (>= total-damage 20)
+    (let [total-damage (+ new-damage damage)
+          this (if (>= total-damage 20)
                  (->Grass x y)
                  (assoc this :damage total-damage))
           ]
@@ -94,10 +93,12 @@
            (.nextInt random (inc (.nextInt random 4)))
            #(vector :add (create-resource acorn-resource x y)))))
        (list
-        [:update [level-id Level :tiles (+ x (* y 128))] tile]
+        [:update [level-id Level :tiles (+ x (* y 128))] this]
+        [:add (particle.smash/new (+ (<< x 4) 8) (+ (<< y 4) 8))]
         [:add
-         (text-particle/new
+         (particle.text-particle/new
           (str new-damage)
           (+ (<< x 4) 8) (+ (<< y 4) 8)
           (colors/index -1 500 500 500))]))))
   )
+
