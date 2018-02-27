@@ -6,13 +6,6 @@
             [funcraft.level.macros :refer [<<]])
   (:import [funcraft.components LifetimeLimit Message Position Velocity]))
 
-(defn new [msg x y col]
-  [(components/->Position x y)
-   (components/->LifetimeLimit 60)
-   (components/->Message msg col)
-   (update (components/new-velocity x y) :zv inc)
-   ])
-
 (defn render-text-particle [this screen _]
   (let [message (get-in this [Message :message])
         x (- (get-in this [Position :x]) (<< (count message) 2))
@@ -22,47 +15,11 @@
     (text/draw message screen x y (get-in this [Message :color])))
   )
 
-(defn message-handler [this itc [msg]]
-  (case msg
-    :tick
-    (reduce
-     (fn [messages id]
-       (let [{{:keys [xx yy zz xv yv zv] :as velocity} Velocity
-              {:keys [x y]} Position} (itc id)
-             xx (+ xv xx)
-             yy (+ yv yy)
-             zz (+ zv zz)
-             velocity (assoc velocity
-                             :xx xx
-                             :yy yy
-                             :zz zz
-                             :zv (- zv 0.15)  ; Gravity
-                             )
-             velocity (if (neg? zz) ; Touched ground? Then...
-                        (assoc velocity
-                               :zz 0
-                               :zv (* -0.5 zv) ; vertical reflection with 50% damping
-                               :xv (*  0.6 xv) ; 40% horizontal velocity damping
-                               :yv (*  0.6 yv))
-                        velocity)
-             ]
-         (conj messages
-               [:update [id Velocity] velocity]
-               [:move id (- (int xx) x) (- (int yy) y)])))
-     ()                         ; Start with an empty list of messages
-     (:ids this))
+(defn new [msg x y col]
+  [(components/->Position x y)
+   (components/->LifetimeLimit 60)
+   (components/->Message msg col)
+   (components/->Sprite render-text-particle -1 col)
+   (update (components/new-velocity x y) :zv inc)
+   ])
 
-    :render
-    (map #(vector :render % render-text-particle) (:ids this))
-
-    nil)
-  )
-
-(def text-particle-engine
-  (engines/->Engine
-   #{Position
-     Message
-     Velocity}
-   #{}
-   message-handler
-   ))

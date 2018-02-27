@@ -33,7 +33,7 @@
    (->Direction 0)
    (->Dimension 4 3)
    (->Walk 0)
-   (->Sprite player-render)
+   (->Sprite player-render -1 -1)
    (->Control input-handler)
    (->Attack 0 12)
    ])

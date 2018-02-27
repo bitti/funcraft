@@ -58,7 +58,8 @@
 
 (defn create-resource [resource x y]
   (item-entity/new
-   resource
+   (:sprite resource)
+   (:color resource)
    (+ (<< x 4) (.nextInt random 10) 3)
    (+ (<< y 4) (.nextInt random 10) 3)))
 
@@ -70,8 +71,6 @@
           tile (if (>= total-damage 20)
                  (->Grass x y)
                  (assoc this :damage total-damage))
-#_          (if (zero? (.nextInt random 10))
-            (conj entities (create-resource apple-resource x y)))
 #_          (if (>= total-damage 20)
             (into entities
                   (into
@@ -95,11 +94,15 @@
                    ))
             entities)
           ]
-      (list
-       [:update [level-id Level :tiles (+ x (* y 128))] tile]
-       [:add
-        (text-particle/new
-         (str new-damage)
-         (+ (<< x 4) 8) (+ (<< y 4) 8)
-         (colors/index -1 500 500 500))])))
+      (concat
+       (if (zero? (.nextInt random 10))
+         (list [:add
+                (create-resource apple-resource x y)]))
+       (list
+        [:update [level-id Level :tiles (+ x (* y 128))] tile]
+        [:add
+         (text-particle/new
+          (str new-damage)
+          (+ (<< x 4) 8) (+ (<< y 4) 8)
+          (colors/index -1 500 500 500))]))))
   )

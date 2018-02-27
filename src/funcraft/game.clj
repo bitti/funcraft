@@ -5,6 +5,7 @@
             [funcraft.engine.attack :as engine.attack]
             [funcraft.engine.collision :as engine.collision]
             [funcraft.engine.control :as engine.control]
+            [funcraft.engine.item :as engine.item]
             [funcraft.engine.level :as engine.level]
             [funcraft.engine.lifetime-limit :as engine.lifetime-limit]
             [funcraft.engine.move :as engine.move]
@@ -54,7 +55,7 @@
     (engine.collision/new)
     (engine.attack/new)
     (engine.lifetime-limit/new)
-    text-particle/text-particle-engine
+    (engine.item/new)
     ]))
 
 (def frame

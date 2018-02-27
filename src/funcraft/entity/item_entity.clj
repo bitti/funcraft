@@ -1,11 +1,16 @@
 (ns funcraft.entity.item-entity
-  (:require [funcraft.entity.entity :refer [->Entity]]
-            [funcraft.item.item]
+  (:require [funcraft.components
+             :as
+             components
+             :refer
+             [->Dimension ->LifetimeLimit ->Position ->Sprite]]
             [funcraft.gfx.colors :as colors]
             [funcraft.gfx.screen :as screen]
             [funcraft.level.level :refer [LevelRenderable]]
+            [funcraft.entity.entity]
             [funcraft.protocols :as entity :refer [Tickable]])
-  (:import funcraft.entity.entity.Entity
+  (:import [funcraft.components LifetimeLimit Position Sprite Velocity]
+           funcraft.entity.entity.Entity
            funcraft.item.item.Item
            java.util.Random))
 
@@ -41,16 +46,22 @@
       1 -1
       )))
 
-(defn new [item x y]
-  (->ItemEntity
-   item
-   (->Entity x y 3 3)                ; Set position and radius 3
-   x y 2
-   (* (.nextGaussian random) 0.3)    ; x velocity
-   (* (.nextGaussian random) 0.2)    ; y velocity
-   (inc (* (.nextFloat random) 0.7)) ; z velocity
-   (+ 600 (.nextInt random 60))      ; lifetime in ticks
-   ))
+(defn render [this screen _]
+  (let [{{:keys [sprite color]} Sprite
+         {:keys [x y]} Position
+         {:keys [lifetime]} LifetimeLimit
+         {:keys [zz]} Velocity} this]
+    (when-not (and (<= lifetime 120) (even? (int (/ lifetime 6))))
+      (screen/render screen (- x 4) (- y 4) sprite (colors/index -1 0 0 0))
+      (screen/render screen (- x 4) (- y 4 (int zz)) sprite color)
+      )))
+
+(defn new [sprite color x y]
+  [(->Position x y)
+   (->Dimension 3 3)                    ; Radius 3
+   (->Sprite render sprite color)
+   (->LifetimeLimit (+ 600 (.nextInt random 60))) ; lifetime in ticks
+   (components/new-velocity x y)])
 
 (extend-type ItemEntity
   Tickable

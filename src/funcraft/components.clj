@@ -11,7 +11,7 @@
 
 (defrecord Walk [^int distance])
 
-(defrecord Sprite [render-fn])
+(defrecord Sprite [render-fn ^int sprite ^int color])
 
 (defrecord Control [input-handler-fn])
 

@@ -3,6 +3,7 @@
             [funcraft.engine-manager :as engine-manager]
             [funcraft.engine.lifetime-limit :as engine.lifetime-limit]
             [funcraft.engine.move :as engine.move]
+            [funcraft.engine.sprite :as engine.sprite]
             [funcraft.engines :as engines]
             [funcraft.entity.particle.text-particle :as sut]
             [funcraft.protocols :as protocols])
@@ -10,7 +11,7 @@
 
 (deftest particle-lifetime-and-movement
   (let [engines [(engine.move/new)
-                 sut/text-particle-engine
+                 (engine.sprite/new)
                  (engine.lifetime-limit/new)]
         text-particle (sut/new "23" 10 20 134)
         [itc engines] (engines/new-entity {} engines text-particle)
@@ -46,7 +47,7 @@
 (deftest particle-creation
   (let [engines [text-particle-creation-engine
                  (engine.move/new)
-                 sut/text-particle-engine
+                 (engine.sprite/new)
                  (engine.lifetime-limit/new)]
         {itc :itc [control-engine & particle-engines] :engines}
         (protocols/tick
