@@ -9,6 +9,9 @@
 (defprotocol LevelRenderable
   (render [this screen level]))
 
+(defprotocol LevelTickable
+  (tick [this level level-id]))
+
 (declare get-tile)
 
 (defrecord Level

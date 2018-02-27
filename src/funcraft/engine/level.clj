@@ -1,6 +1,7 @@
 (ns funcraft.engine.level
   (:require [funcraft.engines :refer [->Engine]]
-            [funcraft.level.level :as level]
+            [funcraft.level.level :as level :refer [LevelTickable]]
+            [funcraft.level.level-gen :refer [even-map-distribution]]
             [funcraft.level.macros :refer [>>]]
             [funcraft.level.tile.tree :as tree :refer [Hurtable]]
             [funcraft.protocols :as protocols])
@@ -37,9 +38,21 @@
   ;; Currently only one level is supported
   (case msg
     :tick
-    (let [id (first (:ids this))]
-      ;; Increase tick counter which is used for animations
-      [:update [id Level :ticks] (inc (get-in itc [id Level :ticks]))])
+    (let [id (first (:ids this))
+          level (get-in itc [id Level])]
+
+      (concat
+
+       ;; Give 50 random tiles a chance to tick
+       (for [[x y] (take 50 (even-map-distribution))
+             :let [tile (level/get-tile level x y)
+                   update (and (satisfies? LevelTickable tile)
+                               (level/tick tile level id))]
+             :when update]
+         update)
+
+       ;; Increase tick counter which is used for animations
+       (list [:update [id Level :ticks] (inc (get-in itc [id Level :ticks]))])))
 
     :render
     (let [id (first (:ids this))]

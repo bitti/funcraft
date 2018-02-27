@@ -1,16 +1,21 @@
 (ns funcraft.level.tile.grass
   (:require [funcraft.gfx.colors :as colors]
             [funcraft.gfx.screen :as screen]
-            [funcraft.level.level :as level :refer [LevelRenderable]]
+            [funcraft.level.tile.dirt]
+            [funcraft.level.level :as level :refer [LevelRenderable LevelTickable]]
             [funcraft.level.macros :refer [<<]])
   (:import funcraft.level.level.Level
-           funcraft.protocols.MayPass))
+           funcraft.level.tile.dirt.Dirt
+           funcraft.protocols.MayPass
+           java.util.Random))
 
 (def ^:const grass-color 141)
 (def ^:const col (colors/index grass-color
                                grass-color
                                (+ grass-color 111)
                                (+ grass-color 111)))
+(def random (Random.))
+
 (def transition-color
   (partial colors/index* (- grass-color 111) grass-color (+ grass-color 111)))
 
@@ -47,4 +52,15 @@
         (screen/render screen (+ x 8) (+ y 8) 3 col)
         (screen/render screen (+ x 8) (+ y 8) (+ (if r 12 13) (if d 32 64)) transition-color))
       ))
+
+  LevelTickable
+  (tick [this level level-id]
+    (let [nextpos (dec (<< (.nextInt random 2) 1))
+          [xn yn] (if (.nextBoolean random)
+                  [(+ x nextpos) y]
+                  [x (+ y nextpos)])
+          tile (level/get-tile level xn yn)]
+      (if (instance? Dirt tile)
+        [:update [level-id Level :tiles (+ xn (* yn (:w level)))]
+         (assoc this :x xn :y yn)])))
   )
