@@ -1,0 +1,62 @@
+In this ECS (Entity Component System) implementation 'Systems' are
+called 'Engines'. Engines are containing a list of component types, a
+list of matching entity ids and a message receive/create function.
+Only entities which are matching all components of an engine are added
+to its entity id list.
+
+Since engines only keep track of entity ids, an ~EngineManager~ is
+needed to keep track of the id->Component Type->Component mapping
+(abbreviated ~itc~). Furthermore it's the responsibility of the
+manager to to distribute and collect messages and update the itc map.
+
+The entity mangager itself only triggers a ~tick~ and a ~render~
+message which should be completely independent of each other. The
+following message sequence diagrams should make this clearer:
+
+#+begin_src plantuml :file tick-sequence.png
+title Tick Sequence
+scale 2
+
+control EngineManager as e
+
+e->Control: (tick itc)
+Control-->e: (move id dpos) *
+note over e: Answers stored\n  in a queue
+e->Move: (tick itc)
+e->Collision: (tick itc)
+e->Move: (move itc id dpos) *
+Move-->e: (update id pos) *
+e->Collision: (move itc id dpos) *
+Collision-->e: (merge fn id dpos) *
+loop Repeat till only update/merge/remove/add\n messages in queue.\n These messages are not distributed
+    e->Control
+    e<--Control
+    e->Move
+    e<--Move
+    e->Collision
+    e<--Collision
+end
+e->e: update itc
+e->e: merge itc
+e->e: remove itc, engines
+e->e: add itc, engines
+#+end_src
+
+#+RESULTS:
+[[file:tick-sequence.png]]
+
+#+begin_src plantuml :file render-sequence.png
+title Render Sequence
+scale 2
+
+control EngineManager as e
+
+e->SpriteRenderer: (render itc)
+SpriteRenderer-->e: (render id fn) *
+e->LevelRenderer: (render itc)
+LevelRenderer-->e: (render id fn) *
+e->e: sort by id\nand render\nto screen
+#+end_src
+
+#+RESULTS:
+[[file:render-sequence.png]]
