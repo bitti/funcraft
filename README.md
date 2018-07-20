@@ -29,17 +29,20 @@ besides walking and swimming around.
 
 Clone from https://github.com/bitti/funcraft
 
-    $ git clone git@github.com:bitti/funcraft.git
+    $ git clone https://github.com/bitti/funcraft.git
 
 Build with
 
+    $ cd funcraft
     $ lein uberjar
 
 ## Usage
 
 After building start with
 
-    $ java -jar target/uberjar/funcraft-0.1.0-SNAPSHOT-standalone.jar
+    $ java -jar target/uberjar/funcraft-0.2.0-standalone.jar
+
+Currently tested with Clojure 1.9.0 and Java 8.
 
 ## Alternative clones
 
