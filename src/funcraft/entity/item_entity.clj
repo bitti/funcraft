@@ -8,7 +8,9 @@
             [funcraft.gfx.screen :as screen]
             [funcraft.level.level :refer [LevelRenderable]]
             [funcraft.entity.entity]
-            [funcraft.protocols :as entity :refer [Tickable]])
+            [funcraft.protocols :as entity :refer [Tickable]]
+            funcraft.item.item
+            )
   (:import [funcraft.components LifetimeLimit Position Sprite Velocity]
            funcraft.entity.entity.Entity
            funcraft.item.item.Item

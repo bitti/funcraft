@@ -3,7 +3,9 @@
             [funcraft.gfx.colors :as color]
             [funcraft.gfx.screen :as screen]
             [funcraft.level.level :refer [LevelRenderable]]
-            [funcraft.protocols :refer [Tickable]])
+            [funcraft.protocols :refer [Tickable]]
+            funcraft.entity.entity
+            )
   (:import funcraft.components.Position
            funcraft.entity.entity.Entity))
 

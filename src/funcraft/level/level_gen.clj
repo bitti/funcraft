@@ -1,6 +1,13 @@
 (ns funcraft.level.level-gen
   (:require [funcraft.gfx.colors :as colors]
-            [funcraft.level.macros :refer [<< >>]])
+            [funcraft.level.macros :refer [<< >>]]
+            funcraft.level.tile.grass
+            funcraft.level.tile.rock
+            funcraft.level.tile.sand
+            funcraft.level.tile.tree
+            funcraft.level.tile.cactus
+            funcraft.level.tile.water
+            )
   (:import funcraft.level.level.Level
            funcraft.level.tile.grass.Grass
            funcraft.level.tile.rock.Rock
